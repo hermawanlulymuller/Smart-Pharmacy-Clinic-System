@@ -111,22 +111,22 @@
 
           <!-- Role Selector Chips -->
           <div class="grid grid-cols-3 gap-2">
-            <button onclick="smartApp.login('admin')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
+            <button onclick="smartApp.selectLoginRole('admin')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
               <i class="fas fa-user-shield block mb-1 text-sm"></i> Admin
             </button>
-            <button onclick="smartApp.login('doctor')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
+            <button onclick="smartApp.selectLoginRole('doctor')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
               <i class="fas fa-user-md block mb-1 text-sm"></i> Dokter
             </button>
-            <button onclick="smartApp.login('pharmacist')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
+            <button onclick="smartApp.selectLoginRole('pharmacist')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
               <i class="fas fa-pills block mb-1 text-sm"></i> Apoteker
             </button>
-            <button onclick="smartApp.login('nurse')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
+            <button onclick="smartApp.selectLoginRole('nurse')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
               <i class="fas fa-user-nurse block mb-1 text-sm"></i> Perawat
             </button>
-            <button onclick="smartApp.login('cashier')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
+            <button onclick="smartApp.selectLoginRole('cashier')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
               <i class="fas fa-cash-register block mb-1 text-sm"></i> Kasir
             </button>
-            <button onclick="smartApp.login('patient')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
+            <button onclick="smartApp.selectLoginRole('patient')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
               <i class="fas fa-user-injured block mb-1 text-sm"></i> Pasien
             </button>
           </div>
@@ -135,11 +135,11 @@
           <div class="space-y-4 pt-2">
             <div>
               <label class="text-xs text-slate-400 block mb-1">Email / NIP / Username</label>
-              <input type="text" class="form-input" placeholder="admin@smartclinic.com" value="admin@smartclinic.com">
+              <input id="login-username" type="text" class="form-input" placeholder="admin@smartclinic.com" value="admin@smartclinic.com">
             </div>
             <div>
               <label class="text-xs text-slate-400 block mb-1">Kata Sandi</label>
-              <input type="password" class="form-input" placeholder="••••••••" value="password123">
+              <input id="login-password" type="password" class="form-input" placeholder="••••••••" value="admin123">
             </div>
 
             <!-- Google Sheets API Connection Field Directly on Login Page -->
@@ -164,6 +164,37 @@
               <i class="fas fa-sign-in-alt"></i> Masuk & Hubungkan Database
             </button>
           </div>
+
+          <!-- Credentials Preview Card -->
+          <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2 text-xs">
+            <div class="font-bold text-teal-400 flex items-center justify-between">
+              <span><i class="fas fa-key text-amber-400 mr-1"></i> Data Akun Demo Default:</span>
+              <span class="text-[10px] text-slate-400 font-normal">Klik tombol di atas untuk isi otomatis</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-[11px] font-mono text-slate-300">
+              <div class="p-1.5 bg-slate-900 rounded border border-slate-800">
+                <div class="text-teal-300 font-bold">1. Administrator</div>
+                <div>User: admin@smartclinic.com</div>
+                <div>Pass: admin123</div>
+              </div>
+              <div class="p-1.5 bg-slate-900 rounded border border-slate-800">
+                <div class="text-teal-300 font-bold">2. Dokter Sp.</div>
+                <div>User: dokter@smartclinic.com</div>
+                <div>Pass: doctor123</div>
+              </div>
+              <div class="p-1.5 bg-slate-900 rounded border border-slate-800">
+                <div class="text-teal-300 font-bold">3. Apoteker</div>
+                <div>User: apoteker@smartclinic.com</div>
+                <div>Pass: pharmacy123</div>
+              </div>
+              <div class="p-1.5 bg-slate-900 rounded border border-slate-800">
+                <div class="text-teal-300 font-bold">4. Perawat / Staf</div>
+                <div>User: perawat@smartclinic.com</div>
+                <div>Pass: nurse123</div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 

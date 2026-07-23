@@ -12,6 +12,7 @@ class SmartAppController {
     this.currentLanguage = localStorage.getItem("SMART_LANG") || APP_CONFIG.defaultLanguage;
     this.currentTheme = localStorage.getItem("SMART_THEME") || APP_CONFIG.defaultTheme;
     this.currentUser = JSON.parse(sessionStorage.getItem("SMART_USER") || "null");
+    this.selectedRole = "admin";
     this.activeModule = "dashboard";
     this.charts = {};
 
@@ -31,13 +32,84 @@ class SmartAppController {
     }
   }
 
-  // Login handler triggered from landing page with direct Google Sheet URL connection
+  // Auto-fill credential inputs based on role selection chip (Does NOT auto-submit so user can edit)
+  selectLoginRole(role) {
+    this.selectedRole = role;
+    const userInput = document.getElementById("login-username");
+    const passInput = document.getElementById("login-password");
+
+    const credentialsMap = {
+      admin: { user: "admin@smartclinic.com", pass: "admin123" },
+      doctor: { user: "dokter@smartclinic.com", pass: "doctor123" },
+      pharmacist: { user: "apoteker@smartclinic.com", pass: "pharmacy123" },
+      nurse: { user: "perawat@smartclinic.com", pass: "nurse123" },
+      cashier: { user: "kasir@smartclinic.com", pass: "cashier123" },
+      patient: { user: "pasien@smartclinic.com", pass: "patient123" }
+    };
+
+    const cred = credentialsMap[role] || credentialsMap.admin;
+    if (userInput) userInput.value = cred.user;
+    if (passInput) passInput.value = cred.pass;
+
+    // Toast feedback
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'info',
+      title: `Form terisi untuk Peran: ${role.toUpperCase()}`,
+      showConfirmButton: false,
+      timer: 1200,
+      background: '#101B24',
+      color: '#fff'
+    });
+  }
+
+  // Login handler triggered when user clicks "Masuk & Hubungkan Database"
   loginFromLanding() {
     const landingInput = document.getElementById("landing-gas-url");
+    const userInput = document.getElementById("login-username")?.value.trim() || "";
+    const passInput = document.getElementById("login-password")?.value.trim() || "";
+
+    if (!userInput) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Username Kosong',
+        text: 'Silakan ketik Email / Username Anda!',
+        background: '#101B24',
+        color: '#fff',
+        confirmButtonColor: '#00C2A8'
+      });
+      return;
+    }
+
+    if (!passInput) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Kata Sandi Kosong',
+        text: 'Silakan ketik Kata Sandi Anda!',
+        background: '#101B24',
+        color: '#fff',
+        confirmButtonColor: '#00C2A8'
+      });
+      return;
+    }
+
+    // Save GAS URL if provided
     if (landingInput && landingInput.value.trim()) {
       dbStore.setGasUrl(landingInput.value.trim());
     }
-    this.login("admin");
+
+    // Determine role from input username or selectedRole
+    let role = this.selectedRole || "admin";
+    const lowerUser = userInput.toLowerCase();
+    if (lowerUser.includes("dokter")) role = "doctor";
+    else if (lowerUser.includes("apoteker")) role = "pharmacist";
+    else if (lowerUser.includes("perawat")) role = "nurse";
+    else if (lowerUser.includes("kasir")) role = "cashier";
+    else if (lowerUser.includes("pasien")) role = "patient";
+
+    // Perform Login
+    this.login(role, userInput);
   }
 
   // --- Google Sheets Realtime Sync Badge & Controller ---
@@ -186,7 +258,6 @@ class SmartAppController {
   }
 
   login(role, customName = "") {
-    // Also save landing GAS URL if filled
     const landingInput = document.getElementById("landing-gas-url");
     if (landingInput && landingInput.value.trim()) {
       dbStore.setGasUrl(landingInput.value.trim());
@@ -194,7 +265,7 @@ class SmartAppController {
 
     const roleConfig = APP_CONFIG.roles[role] || APP_CONFIG.roles.admin;
     this.currentUser = {
-      name: customName || (role === 'patient' ? 'Budi Santoso (Pasien)' : `Dr. / Staf ${roleConfig.label}`),
+      name: customName || (role === 'patient' ? 'Budi Santoso (Pasien)' : `Staf ${roleConfig.label}`),
       role: role,
       roleBadge: roleConfig.badge,
       roleLabel: roleConfig.label,
@@ -740,7 +811,7 @@ class SmartAppController {
           <td><span class="text-xs text-slate-400">${m.location}</span></td>
           <td>
             <div class="flex gap-2">
-              <button onclick="smartApp.generateMedicineQR('${m.id}', '${m.name}')" class="px-2 py-1 bg-teal-500/20 text-teal-300 border border-teal-500/30 rounded text-xs hover:bg-teal-500/30">
+              <button onclick="smartApp.generateMedicineQR('${m.id}', '${m.name}')" class="px-2 py-1 bg-teal-500/20 text-teal-300 border border-teal-500/30 rounded hover:bg-teal-500/40 text-xs">
                 <i class="fas fa-barcode"></i> Code
               </button>
             </div>
