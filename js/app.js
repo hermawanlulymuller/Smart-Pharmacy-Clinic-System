@@ -17,9 +17,27 @@ class SmartAppController {
 
     this.initTheme();
     this.initLanguage();
+    this.initLandingGasInput();
     this.checkAuth();
     this.bindGlobalEvents();
     this.initGasSyncStatus();
+  }
+
+  // Pre-fill landing page Google Sheet API URL field
+  initLandingGasInput() {
+    const landingInput = document.getElementById("landing-gas-url");
+    if (landingInput) {
+      landingInput.value = dbStore.getGasUrl();
+    }
+  }
+
+  // Login handler triggered from landing page with direct Google Sheet URL connection
+  loginFromLanding() {
+    const landingInput = document.getElementById("landing-gas-url");
+    if (landingInput && landingInput.value.trim()) {
+      dbStore.setGasUrl(landingInput.value.trim());
+    }
+    this.login("admin");
   }
 
   // --- Google Sheets Realtime Sync Badge & Controller ---
@@ -42,7 +60,6 @@ class SmartAppController {
       if (text) text.textContent = "Google Sheet: Connected";
       if (icon) icon.className = "fas fa-check-circle text-emerald-400 text-xs ml-1";
 
-      // Attempt background initial sync from Sheets
       const updated = await gasSyncService.syncFromSheets();
       if (updated) {
         this.loadModule(this.activeModule);
@@ -68,7 +85,7 @@ class SmartAppController {
 
     try {
       if (!gasSyncService.getUrl()) {
-        throw new Error("URL Google Apps Script belum dikonfigurasi di Settings.");
+        throw new Error("URL Google Apps Script belum dikonfigurasi di Settings atau Landing Page.");
       }
 
       await gasSyncService.syncAllToGoogleSheets();
@@ -169,6 +186,12 @@ class SmartAppController {
   }
 
   login(role, customName = "") {
+    // Also save landing GAS URL if filled
+    const landingInput = document.getElementById("landing-gas-url");
+    if (landingInput && landingInput.value.trim()) {
+      dbStore.setGasUrl(landingInput.value.trim());
+    }
+
     const roleConfig = APP_CONFIG.roles[role] || APP_CONFIG.roles.admin;
     this.currentUser = {
       name: customName || (role === 'patient' ? 'Budi Santoso (Pasien)' : `Dr. / Staf ${roleConfig.label}`),
@@ -191,6 +214,7 @@ class SmartAppController {
       timer: 1800
     }).then(() => {
       this.checkAuth();
+      this.initGasSyncStatus();
     });
   }
 
