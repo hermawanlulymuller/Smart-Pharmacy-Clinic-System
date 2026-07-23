@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Pharmacy & Clinic Management System | Luly Agency</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="AI-Powered Smart Pharmacy & Clinic Management System by Luly Agency. Dark UI, Glassmorphism, Electronic Health Records, Telemedicine, POS & Google Sheets API Integration.">
+  <meta name="theme-color" content="#08121A">
+
+  <!-- Google Fonts (Outfit & Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'teal-primary': '#00C2A8',
+            'teal-secondary': '#14E1C6',
+            'teal-accent': '#31F2D5',
+            'dark-bg': '#08121A',
+            'dark-card': '#101B24',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Design System Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Third Party Libraries (Chart.js, SweetAlert2, QRCode.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-[#08121A] text-white selection:bg-teal-500 selection:text-black">
+
+  <!-- Ambient Glow Particle FX -->
+  <div class="ambient-glow -top-32 -left-32"></div>
+  <div class="ambient-glow top-1/2 right-0"></div>
+
+  <!-- ===================================================================
+       1. LANDING & LOGIN VIEW
+       =================================================================== -->
+  <div id="landing-login-view" class="min-h-screen flex items-center justify-center p-4 relative z-10">
+    <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      
+      <!-- Left Side: Hero Brand & Healthcare Graphic -->
+      <div class="lg:col-span-7 space-y-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-semibold uppercase tracking-wider">
+          <i class="fas fa-sparkles"></i> Healthcare SaaS Platform 2026
+        </div>
+        
+        <h1 class="text-4xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+          Smart Pharmacy & <br>
+          <span class="bg-gradient-to-r from-teal-400 via-emerald-300 to-cyan-400 bg-clip-text text-transparent">Clinic System</span>
+        </h1>
+        
+        <p class="text-slate-400 text-base max-w-xl leading-relaxed">
+          Platform Manajemen Klinik & Apotek berbasis AI dengan Tampilan Dark Glassmorphism, Rekam Medis Elektronik, Telemedisin, POS Kasir, dan Integrasi Google Sheets Database.
+        </p>
+
+        <!-- Feature Pills -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+          <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+            <i class="fas fa-user-md text-teal-400 text-xl"></i>
+            <div>
+              <div class="text-xs font-bold text-white">Dokter Sp.</div>
+              <div class="text-[10px] text-slate-400">Jadwal & Rekam Medis</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+            <i class="fas fa-pills text-teal-400 text-xl"></i>
+            <div>
+              <div class="text-xs font-bold text-white">Apoteker</div>
+              <div class="text-[10px] text-slate-400">Dispensing & Expired</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+            <i class="fas fa-robot text-teal-400 text-xl"></i>
+            <div>
+              <div class="text-xs font-bold text-white">AI Assistant</div>
+              <div class="text-[10px] text-slate-400">Clinical Support</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-xs text-slate-500 pt-4 border-t border-slate-800/80">
+          Designed by <span class="text-teal-400 font-bold">Luly Agency</span> • High-Performance Medical Architecture
+        </div>
+      </div>
+
+      <!-- Right Side: Glass Login Card -->
+      <div class="lg:col-span-5">
+        <div class="glass-panel p-8 space-y-6">
+          <div>
+            <h2 class="text-xl font-bold text-white">Masuk Sistem</h2>
+            <p class="text-xs text-slate-400 mt-1">Pilih peran akun Anda untuk melanjutkan</p>
+          </div>
+
+          <!-- Role Selector Chips -->
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="smartApp.login('admin')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
+              <i class="fas fa-user-shield block mb-1 text-sm"></i> Admin
+            </button>
+            <button onclick="smartApp.login('doctor')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
+              <i class="fas fa-user-md block mb-1 text-sm"></i> Dokter
+            </button>
+            <button onclick="smartApp.login('pharmacist')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
+              <i class="fas fa-pills block mb-1 text-sm"></i> Apoteker
+            </button>
+            <button onclick="smartApp.login('nurse')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
+              <i class="fas fa-user-nurse block mb-1 text-sm"></i> Perawat
+            </button>
+            <button onclick="smartApp.login('cashier')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
+              <i class="fas fa-cash-register block mb-1 text-sm"></i> Kasir
+            </button>
+            <button onclick="smartApp.login('patient')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/20 text-xs font-semibold text-teal-300 border border-teal-500/30 text-center transition">
+              <i class="fas fa-user-injured block mb-1 text-sm"></i> Pasien
+            </button>
+          </div>
+
+          <!-- Direct Login Form -->
+          <div class="space-y-4 pt-2">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Email / NIP / Username</label>
+              <input type="text" class="form-input" placeholder="admin@smartclinic.com" value="admin@smartclinic.com">
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Kata Sandi</label>
+              <input type="password" class="form-input" placeholder="••••••••" value="password123">
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked class="rounded border-slate-700 text-teal-500"> Remember Me
+              </label>
+              <a href="#" onclick="Swal.fire('Lupa Password', 'Silakan hubungi Administrator Sistem Luly Agency untuk reset password NIP.', 'info')" class="text-teal-400 hover:underline">Lupa Password?</a>
+            </div>
+
+            <button onclick="smartApp.login('admin')" class="w-full py-3 glow-teal-btn rounded-xl font-bold text-sm tracking-wide flex items-center justify-center gap-2">
+              <i class="fas fa-sign-in-alt"></i> Masuk Sekarang
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ===================================================================
+       2. MAIN APP SHELL VIEW
+       =================================================================== -->
+  <div id="app-shell-view" class="min-h-screen flex flex-col hidden relative z-10">
+    
+    <!-- Top Navbar -->
+    <header class="h-16 border-b border-slate-800/80 bg-[#0B1722]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 lg:px-6">
+      
+      <div class="flex items-center gap-4">
+        <!-- Sidebar Toggle Mobile -->
+        <button onclick="document.getElementById('app-sidebar').classList.toggle('-translate-x-full')" class="lg:hidden text-slate-300 hover:text-white">
+          <i class="fas fa-bars text-xl"></i>
+        </button>
+
+        <!-- Logo -->
+        <div class="flex items-center gap-2 font-extrabold text-lg tracking-tight">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-500 to-cyan-400 flex items-center justify-center text-black font-black text-xl shadow-lg shadow-teal-500/20">
+            S
+          </div>
+          <span class="hidden sm:inline bg-gradient-to-r from-white via-slate-200 to-teal-300 bg-clip-text text-transparent">SMART CLINIC</span>
+        </div>
+
+        <!-- Multi-Branch Selector -->
+        <div class="hidden sm:flex items-center gap-2 ml-4 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+          <i class="fas fa-building text-teal-400"></i>
+          <select id="global-branch-selector" class="bg-transparent text-slate-300 outline-none text-xs">
+            <option value="BR-01">Klinik Utama Sudirman (Pusat)</option>
+            <option value="BR-02">Klinik & Apotik Medika Barat</option>
+            <option value="BR-03">Smart Care Centre BSD</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="hidden md:flex items-center gap-2 w-72 lg:w-96 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800">
+        <i class="fas fa-search text-slate-500 text-sm"></i>
+        <input id="global-search-input" data-i18n="searchPlaceholder" type="text" placeholder="Cari pasien, obat, dokter..." class="bg-transparent text-xs text-white outline-none w-full">
+      </div>
+
+      <!-- Right Action Tools -->
+      <div class="flex items-center gap-3">
+        
+        <!-- Live Google Sheet Sync Status Badge & Button -->
+        <button onclick="smartApp.triggerManualSync()" title="Klik untuk Sinkronkan dengan Google Sheets" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold hover:border-teal-500/40 transition">
+          <span id="gas-sync-status-dot" class="pulse-dot warning"></span>
+          <span id="gas-sync-status-text" class="text-slate-300">Google Sheet: LocalStorage</span>
+          <i id="gas-sync-icon" class="fas fa-sync text-teal-400 text-xs ml-1"></i>
+        </button>
+
+        <!-- Emergency Call Button -->
+        <button onclick="smartApp.openEmergencyModal()" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold hover:bg-rose-500/30 flex items-center gap-1.5">
+          <i class="fas fa-phone-alt animate-pulse"></i> <span class="hidden md:inline" data-i18n="emergencyBtn">Panggilan Darurat</span>
+        </button>
+
+        <!-- Language Switcher -->
+        <button onclick="smartApp.toggleLanguage()" class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-globe text-teal-400"></i> <span id="current-lang-label">ID</span>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button onclick="smartApp.toggleTheme()" class="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+          <i id="theme-icon" class="fas fa-moon text-amber-400"></i>
+        </button>
+
+        <!-- User Profile Dropdown -->
+        <div class="flex items-center gap-3 pl-3 border-l border-slate-800">
+          <div class="text-right hidden sm:block">
+            <div id="user-display-name" class="text-xs font-bold text-white">Admin System</div>
+            <div id="user-display-role" class="badge-status badge-teal">Administrator</div>
+          </div>
+          <button onclick="smartApp.logout()" title="Logout" class="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 text-rose-400 hover:bg-rose-500/20 flex items-center justify-center">
+            <i class="fas fa-power-off"></i>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+      
+      <!-- Responsive Sidebar Nav -->
+      <aside id="app-sidebar" class="w-64 border-r border-slate-800/80 bg-[#08121A]/95 backdrop-blur-lg flex flex-col p-4 space-y-1 overflow-y-auto transition-transform duration-300 absolute lg:relative z-20 h-[calc(100vh-4rem)] -translate-x-full lg:translate-x-0">
+        
+        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 py-2">Navigasi Utama</div>
+        <a onclick="smartApp.loadModule('dashboard')" data-module="dashboard" class="nav-link active">
+          <i class="fas fa-chart-pie"></i> <span data-i18n="navDashboard">Dashboard Utama</span>
+        </a>
+        <a onclick="smartApp.loadModule('patients')" data-module="patients" class="nav-link">
+          <i class="fas fa-user-injured"></i> <span data-i18n="navPatients">Pasien & Rekam Medis</span>
+        </a>
+        <a onclick="smartApp.loadModule('doctors')" data-module="doctors" class="nav-link">
+          <i class="fas fa-user-md"></i> <span data-i18n="navDoctors">Dokter & Jadwal</span>
+        </a>
+        <a onclick="smartApp.loadModule('appointments')" data-module="appointments" class="nav-link">
+          <i class="fas fa-calendar-check"></i> <span data-i18n="navAppointments">Janji Temu & Antrean</span>
+        </a>
+        <a onclick="smartApp.loadModule('medicine')" data-module="medicine" class="nav-link">
+          <i class="fas fa-pills"></i> <span data-i18n="navMedicine">Apotek & Stok Obat</span>
+        </a>
+        <a onclick="smartApp.loadModule('consultation')" data-module="consultation" class="nav-link">
+          <i class="fas fa-comments-medical"></i> <span data-i18n="navConsultation">Telemedisin Room</span>
+        </a>
+        <a onclick="smartApp.loadModule('ai-assistant')" data-module="ai-assistant" class="nav-link">
+          <i class="fas fa-robot text-teal-400"></i> <span data-i18n="navAiAssistant">AI Health Assistant</span>
+        </a>
+
+        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 py-2 pt-4">Stasiun Kerja Klinis</div>
+        <a onclick="smartApp.loadModule('nurse')" data-module="nurse" class="nav-link">
+          <i class="fas fa-stethoscope"></i> <span data-i18n="navNurse">Stasiun Perawat</span>
+        </a>
+        <a onclick="smartApp.loadModule('pharmacist')" data-module="pharmacist" class="nav-link">
+          <i class="fas fa-prescription-bottle-alt"></i> <span data-i18n="navPharmacist">Dispensing Apoteker</span>
+        </a>
+        <a onclick="smartApp.loadModule('cashier')" data-module="cashier" class="nav-link">
+          <i class="fas fa-cash-register"></i> <span data-i18n="navCashier">Kasir & Billing (POS)</span>
+        </a>
+
+        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 py-2 pt-4">Manajemen & Laporan</div>
+        <a onclick="smartApp.loadModule('reports')" data-module="reports" class="nav-link">
+          <i class="fas fa-file-invoice-dollar"></i> <span data-i18n="navReports">Laporan & Keuangan</span>
+        </a>
+        <a onclick="smartApp.loadModule('settings')" data-module="settings" class="nav-link">
+          <i class="fas fa-sliders-h"></i> <span data-i18n="navSettings">Pengaturan & API</span>
+        </a>
+
+        <div class="pt-6">
+          <div class="p-3 rounded-xl bg-slate-900 border border-teal-500/20 space-y-2">
+            <div class="text-xs font-bold text-teal-400">Mode Tampilan Khusus</div>
+            <button onclick="smartApp.toggleQueueTV()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-white rounded font-medium flex items-center justify-center gap-1.5">
+              <i class="fas fa-tv"></i> Layar TV Antrean
+            </button>
+            <button onclick="smartApp.toggleKioskMode()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-white rounded font-medium flex items-center justify-center gap-1.5">
+              <i class="fas fa-tablet-alt"></i> Mandiri Check-in Kiosk
+            </button>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- Main Content Container -->
+      <main class="flex-1 overflow-y-auto p-4 lg:p-6">
+        
+        <!-- MODULE 1: DASHBOARD OVERVIEW -->
+        <div id="module-dashboard" class="module-view space-y-6">
+          
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-bold text-white tracking-tight">Executive Dashboard</h2>
+              <p class="text-xs text-slate-400">Ikhtisar real-time operasional klinik & apotek hari ini.</p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="smartApp.triggerManualSync()" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-teal-300 border border-teal-500/30 rounded-xl text-xs font-bold flex items-center gap-2">
+                <i class="fas fa-sync animate-spin-slow"></i> Sync Google Sheet
+              </button>
+              <button onclick="smartApp.addNewPatientModal()" class="glow-teal-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
+                <i class="fas fa-user-plus"></i> <span data-i18n="addPatient">+ Tambah Pasien</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI Cards Grid -->
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div class="glass-card p-4">
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-bold text-slate-400" data-i18n="todayPatients">Pasien Hari Ini</span>
+                <i class="fas fa-user-injured text-teal-400 text-lg"></i>
+              </div>
+              <div id="kpi-patients-count" class="text-2xl font-extrabold text-white mt-2">128</div>
+              <div class="text-[10px] text-emerald-400 mt-1"><i class="fas fa-arrow-up"></i> +12% dibanding kemarin</div>
+            </div>
+
+            <div class="glass-card p-4">
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-bold text-slate-400" data-i18n="activeDoctors">Dokter Praktek</span>
+                <i class="fas fa-user-md text-teal-400 text-lg"></i>
+              </div>
+              <div id="kpi-doctors-count" class="text-2xl font-extrabold text-white mt-2">6</div>
+              <div class="text-[10px] text-teal-300 mt-1">3 Poli Aktif</div>
+            </div>
+
+            <div class="glass-card p-4">
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-bold text-slate-400" data-i18n="medicineStock">Jenis Obat</span>
+                <i class="fas fa-boxes text-sky-400 text-lg"></i>
+              </div>
+              <div id="kpi-stock-count" class="text-2xl font-extrabold text-white mt-2">450</div>
+              <div class="text-[10px] text-slate-400 mt-1">Total SKU Apotek</div>
+            </div>
+
+            <div class="glass-card p-4">
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-bold text-slate-400" data-i18n="lowStockAlert">Alert Menipis</span>
+                <i class="fas fa-exclamation-triangle text-amber-400 text-lg"></i>
+              </div>
+              <div id="kpi-lowstock-count" class="text-2xl font-extrabold text-amber-400 mt-2">3</div>
+              <div class="text-[10px] text-rose-400 mt-1"><i class="fas fa-bell"></i> Perlu Re-order</div>
+            </div>
+
+            <div class="glass-card p-4 col-span-2 sm:col-span-1">
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-bold text-slate-400" data-i18n="revenueToday">Omset Hari Ini</span>
+                <i class="fas fa-wallet text-emerald-400 text-lg"></i>
+              </div>
+              <div id="kpi-revenue-today" class="text-xl font-extrabold text-emerald-400 mt-2">Rp 645.000</div>
+              <div class="text-[10px] text-slate-400 mt-1">POS & Billing Lunas</div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="glass-card p-5 lg:col-span-2">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-white text-sm">Grafik Pendapatan Bulanan (2026)</h3>
+                <span class="badge-status badge-teal">Realtime Data</span>
+              </div>
+              <div class="h-64">
+                <canvas id="chart-revenue-canvas"></canvas>
+              </div>
+            </div>
+
+            <div class="glass-card p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-white text-sm">Penggunaan Obat Terbanyak</h3>
+              </div>
+              <div class="h-64">
+                <canvas id="chart-usage-canvas"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Activity Feed & Motivation Widget -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="glass-card p-5 lg:col-span-2 space-y-4">
+              <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                <i class="fas fa-history text-teal-400"></i> Audit Trail Activity Feed
+              </h3>
+              <div id="dashboard-activity-feed" class="space-y-2"></div>
+            </div>
+
+            <div class="glass-card p-5 space-y-4 bg-gradient-to-br from-slate-900 to-teal-950/40">
+              <div class="flex items-center gap-2 text-teal-400 text-xs font-bold uppercase">
+                <i class="fas fa-quote-left"></i> Motivasi Kesehatan Hari Ini
+              </div>
+              <p class="text-sm text-slate-200 italic leading-relaxed">
+                "Kesehatan dan keceriaan secara alami melahirkan satu sama lain. Pelayanan medis terbaik dimulai dari empati dan presisi klinis."
+              </p>
+              <div class="text-xs text-slate-400 border-t border-slate-800 pt-3">
+                Emergency Helpline: <span class="text-teal-300 font-bold">119 / Ext 201</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- MODULE 2: PATIENTS MANAGEMENT -->
+        <div id="module-patients" class="module-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Pasien & Rekam Medis</h2>
+              <p class="text-xs text-slate-400">Database pasien terintegrasi dengan Patient QR Card & Rekam Medis Timeline.</p>
+            </div>
+            <button onclick="smartApp.addNewPatientModal()" class="glow-teal-btn px-4 py-2 rounded-xl text-xs font-bold">
+              <i class="fas fa-plus mr-1"></i> Tambah Pasien Baru
+            </button>
+          </div>
+
+          <div class="custom-table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>No. RM / Asuransi</th>
+                  <th>Nama Pasien</th>
+                  <th>Kontak / Email</th>
+                  <th>Gol. Darah</th>
+                  <th>Alergi Kontraindikasi</th>
+                  <th>Aksi Medis</th>
+                </tr>
+              </thead>
+              <tbody id="patients-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+
+        <!-- MODULE 3: DOCTORS DIRECTORY -->
+        <div id="module-doctors" class="module-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Dokter & Jadwal Praktek</h2>
+              <p class="text-xs text-slate-400">Direktori spesialis medis, ruangan praktek & ketersediaan online.</p>
+            </div>
+          </div>
+          <div id="doctors-grid-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </div>
+
+
+        <!-- MODULE 4: APPOINTMENTS -->
+        <div id="module-appointments" class="module-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Janji Temu & Antrean Online</h2>
+              <p class="text-xs text-slate-400">Booking antrean pasien dengan pengingat WhatsApp otomatis.</p>
+            </div>
+          </div>
+          <div class="custom-table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>No. Antrean</th>
+                  <th>Nama Pasien / Catatan</th>
+                  <th>Dokter / Waktu</th>
+                  <th>Tipe</th>
+                  <th>Status</th>
+                  <th>Aksi WA</th>
+                </tr>
+              </thead>
+              <tbody id="appointments-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+
+        <!-- MODULE 5: MEDICINE / INVENTORY -->
+        <div id="module-medicine" class="module-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Apotek & Stok Obat</h2>
+              <p class="text-xs text-slate-400">Manajemen persediaan obat, alert kadaluarsa & pencetakan Barcode QR.</p>
+            </div>
+          </div>
+
+          <!-- Banners -->
+          <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <i class="fas fa-exclamation-circle text-amber-400 text-2xl"></i>
+              <div>
+                <div class="text-xs font-bold text-amber-300">Peringatan Obat Mendekati Expired</div>
+                <div class="text-[11px] text-amber-200/80">Beberapa obat seperti Amlodipine 10mg kadaluarsa dalam < 60 hari. Segera lakukan rotasi FEFO!</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="custom-table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Nama Obat / Brand</th>
+                  <th>No. Batch</th>
+                  <th>Expired Date</th>
+                  <th>Harga Jual</th>
+                  <th>Sisa Stok</th>
+                  <th>Lokasi Rak</th>
+                  <th>Aksi Barcode</th>
+                </tr>
+              </thead>
+              <tbody id="medicines-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+
+        <!-- MODULE 6: TELEMEDICINE CONSULTATION ROOM -->
+        <div id="module-consultation" class="module-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Ruang Telemedisin & Ruang Chat</h2>
+              <p class="text-xs text-slate-400">Konsultasi dokter virtual, unggah hasil foto & resep digital.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-8 glass-card p-4 flex flex-col h-[500px]">
+              <div class="p-3 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=100" class="w-10 h-10 rounded-full border border-teal-400">
+                  <div>
+                    <h3 class="font-bold text-white text-sm">dr. Andi Wijaya, Sp.PD</h3>
+                    <span class="text-[10px] text-teal-400"><i class="fas fa-circle text-[8px] mr-1"></i> Ruang Konsultasi Aktif</span>
+                  </div>
+                </div>
+                <button onclick="Swal.fire('Video Call Telemedisin', 'Fitur WebRTC Video Call Siap Terkoneksi!', 'info')" class="px-3 py-1.5 bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-lg text-xs font-bold">
+                  <i class="fas fa-video mr-1"></i> Start Video Call
+                </button>
+              </div>
+
+              <div id="telemedicine-chat-body" class="flex-1 overflow-y-auto p-4 space-y-3">
+                <div class="flex flex-col items-start mb-4">
+                  <div class="chat-bubble-ai">
+                    <p class="text-sm">Selamat pagi Bapak Budi, ada keluhan apa hari ini terkait tensi atau obatnya?</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-3 border-t border-slate-800 flex items-center gap-2">
+                <input id="telemedicine-chat-input" type="text" placeholder="Ketik pesan konsultasi..." class="form-input text-xs" onkeypress="if(event.key==='Enter') smartApp.sendConsultationMessage()">
+                <button onclick="smartApp.sendConsultationMessage()" class="glow-teal-btn px-4 py-2 rounded-xl text-xs font-bold shrink-0">
+                  Kirim
+                </button>
+              </div>
+            </div>
+
+            <div class="lg:col-span-4 glass-card p-4 space-y-4">
+              <h3 class="font-bold text-white text-sm border-b border-slate-800 pb-2">Buat Resep Digital</h3>
+              <div class="space-y-3">
+                <input type="text" class="form-input text-xs" placeholder="Pilih Obat (misal: Paracetamol 500mg)">
+                <input type="text" class="form-input text-xs" placeholder="Aturan Pakai (misal: 3x1 Sesudah makan)">
+                <div class="p-3 bg-slate-900 rounded-lg border border-slate-800">
+                  <div class="text-xs text-slate-400 mb-1">Tanda Tangan Digital Dokter:</div>
+                  <div class="h-16 border border-dashed border-teal-500/40 rounded flex items-center justify-center text-teal-400 font-mono text-xs">
+                    [ Digital Signature Signed ]
+                  </div>
+                </div>
+                <button onclick="Swal.fire('Resep Diterbitkan', 'Resep berhasil dikirim ke stasiun Apoteker!', 'success')" class="w-full py-2 glow-teal-btn rounded-xl text-xs font-bold">
+                  Kirim Resep ke Apotek
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- MODULE 7: AI HEALTH ASSISTANT -->
+        <div id="module-ai-assistant" class="module-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                <i class="fas fa-robot text-teal-400"></i> AI Health Assistant & Clinical Tools
+              </h2>
+              <p class="text-xs text-slate-400">Asisten medis AI berbasis OpenRouter / Gemini / Groq & Kalkulator Kesehatan.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-8 glass-card p-4 flex flex-col h-[520px]">
+              <div id="ai-chat-body" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <div class="chat-bubble-ai">
+                  <div class="flex items-center gap-2 mb-1">
+                    <i class="fas fa-robot text-teal-400"></i>
+                    <span class="text-xs font-bold text-teal-400">Smart Health Assistant AI</span>
+                  </div>
+                  <p class="text-sm">Halo! Saya AI Health Assistant Smart Clinic. Saya dapat menjawab pertanyaan seputar dosis obat, rekomendasi gaya hidup sehat, hingga bantuan kalkulator kesehatan.</p>
+                </div>
+              </div>
+
+              <div class="p-3 border-t border-slate-800 flex items-center gap-2">
+                <input id="ai-assistant-input" type="text" placeholder="Tanyakan seputar obat, penyakit, atau kalkulator BMI..." class="form-input text-xs" onkeypress="if(event.key==='Enter') smartApp.sendAiAssistantMessage()">
+                <button onclick="smartApp.sendAiAssistantMessage()" class="glow-teal-btn px-4 py-2 rounded-xl text-xs font-bold">
+                  Tanya AI
+                </button>
+              </div>
+            </div>
+
+            <!-- Calculators sidebar -->
+            <div class="lg:col-span-4 space-y-4">
+              <div class="glass-card p-4 space-y-3">
+                <h3 class="font-bold text-white text-sm"><i class="fas fa-calculator text-teal-400 mr-1"></i> Instant Health Calculators</h3>
+                <button onclick="smartApp.sendAiAssistantMessage('Berapa standar BMI ideal dan cara menghitungnya?')" class="w-full text-left p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800">
+                  📊 Kalkulator BMI & Berat Ideal
+                </button>
+                <button onclick="smartApp.sendAiAssistantMessage('Berapa kebutuhan air minum harian saya?')" class="w-full text-left p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800">
+                  💧 Kalkulator Konsumsi Air
+                </button>
+                <button onclick="smartApp.sendAiAssistantMessage('Berikan informasi dosis dan efek samping obat Paracetamol.')" class="w-full text-left p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800">
+                  💊 Cek Interaksi Obat
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- MODULE 8: NURSE WORKSTATION -->
+        <div id="module-nurse" class="module-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Stasiun Perawat (Nurse Station)</h2>
+              <p class="text-xs text-slate-400">Pencatatan Tanda-tanda Vital Pasien (Suhu, TD, Nadi, SpO2) & Pergerakan Ruangan.</p>
+            </div>
+          </div>
+          <div id="nurse-queue-list" class="space-y-3"></div>
+        </div>
+
+
+        <!-- MODULE 9: PHARMACIST DISPENSING -->
+        <div id="module-pharmacist" class="module-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Dispensing & Verifikasi Apoteker</h2>
+              <p class="text-xs text-slate-400">Verifikasi resep dokter, cek interaksi obat & pencetakan etiket label.</p>
+            </div>
+          </div>
+          <div id="pharmacist-dispense-list"></div>
+        </div>
+
+
+        <!-- MODULE 10: CASHIER & POS BILLING -->
+        <div id="module-cashier" class="module-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Kasir & Point of Sale (POS)</h2>
+              <p class="text-xs text-slate-400">Pembayaran jasa dokter & penjualan obat kasir (QRIS, Tunai, Transfer).</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-8 glass-card p-4 space-y-3">
+              <h3 class="font-bold text-white text-sm">Pilih Obat & Layanan Kasir</h3>
+              <div id="pos-items-list" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+            </div>
+
+            <div class="lg:col-span-4 glass-card p-4 flex flex-col justify-between h-[450px]">
+              <div class="space-y-3">
+                <h3 class="font-bold text-white text-sm border-b border-slate-800 pb-2">Keranjang Transaksi</h3>
+                <div id="pos-cart-items" class="space-y-2 max-h-48 overflow-y-auto"></div>
+              </div>
+
+              <div class="border-t border-slate-800 pt-3 space-y-3">
+                <div class="flex justify-between items-center text-sm font-bold">
+                  <span>Total Tagihan:</span>
+                  <span id="pos-grand-total" class="text-emerald-400 text-lg">Rp 0</span>
+                </div>
+                <button onclick="smartApp.processPOSPayment()" class="w-full py-3 glow-teal-btn rounded-xl font-bold text-sm">
+                  Proses Pembayaran (POS)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- MODULE 11: REPORTS & ANALYTICS -->
+        <div id="module-reports" class="module-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Laporan & Keuangan</h2>
+              <p class="text-xs text-slate-400">Laporan omset harian, kinerja dokter & rekapitulasi stok obat.</p>
+            </div>
+          </div>
+          <div class="glass-card p-5">
+            <div class="h-80">
+              <canvas id="chart-report-analytics"></canvas>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- MODULE 12: SETTINGS & GOOGLE SHEETS API -->
+        <div id="module-settings" class="module-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Pengaturan Sistem & Integrasi API</h2>
+              <p class="text-xs text-slate-400">Integrasi Google Sheets Database REST API & AI Provider Keys.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="glass-card p-6 space-y-4">
+              <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                <i class="fab fa-google text-emerald-400"></i> Google Sheets Database REST API
+              </h3>
+              <p class="text-xs text-slate-300">Hubungkan Google Sheets sebagai database utama sistem ini secara 100% GRATIS!</p>
+
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">Google Apps Script Web App URL:</label>
+                <input id="setting-gas-url" type="text" placeholder="https://script.google.com/macros/s/.../exec" class="form-input text-xs">
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                <button onclick="smartApp.saveSettings()" class="px-4 py-2 glow-teal-btn rounded-xl text-xs font-bold">
+                  Simpan URL API
+                </button>
+                <button onclick="smartApp.triggerManualSync()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold">
+                  <i class="fas fa-sync mr-1"></i> Sync Realtime Sekarang
+                </button>
+                <button onclick="smartApp.showGasCodeModal()" class="px-4 py-2 bg-slate-800 text-teal-300 border border-teal-500/30 rounded-xl text-xs font-bold hover:bg-slate-700">
+                  <i class="fas fa-code mr-1"></i> Ambil Code.gs
+                </button>
+              </div>
+            </div>
+
+            <div class="glass-card p-6 space-y-4">
+              <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                <i class="fas fa-microchip text-teal-400"></i> AI Provider Config (OpenRouter / Gemini / Groq)
+              </h3>
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">Pilih Provider AI:</label>
+                <select id="ai-provider-select" class="form-input text-xs">
+                  <option value="fallback">Offline Smart Medical Engine (Default)</option>
+                  <option value="openrouter">OpenRouter Free Models</option>
+                  <option value="gemini">Google Gemini Free Tier</option>
+                  <option value="groq">Groq Llama-3 API</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-slate-400 block mb-1">API Key:</label>
+                <input type="password" class="form-input text-xs" placeholder="sk-or-v1-...">
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
+
+  <!-- Application Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/ai-service.js"></script>
+  <script src="js/google-apps-script.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
