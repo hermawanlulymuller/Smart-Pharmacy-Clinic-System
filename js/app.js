@@ -3,10 +3,6 @@
    Main Application Router, State Store, & UI Controller
    ========================================================================== */
 
-document.addEventListener("DOMContentLoaded", () => {
-  window.smartApp = new SmartAppController();
-});
-
 class SmartAppController {
   constructor() {
     this.currentLanguage = localStorage.getItem("SMART_LANG") || APP_CONFIG.defaultLanguage;
@@ -22,9 +18,10 @@ class SmartAppController {
     this.checkAuth();
     this.bindGlobalEvents();
     this.initGasSyncStatus();
+    this.checkLandingGasConnection();
   }
 
-  // Pre-fill landing page Google Sheet API URL field
+  // Pre-fill landing page Google Sheet API URL field & auto-test connection
   initLandingGasInput() {
     const landingInput = document.getElementById("landing-gas-url");
     if (landingInput) {
@@ -32,7 +29,66 @@ class SmartAppController {
     }
   }
 
-  // Auto-fill credential inputs based on role selection chip (Does NOT auto-submit so user can edit)
+  // Live LED indicator checker for Landing Page
+  async checkLandingGasConnection(showToast = false) {
+    const landingInput = document.getElementById("landing-gas-url");
+    const badge = document.getElementById("landing-sync-badge");
+    const led = document.getElementById("landing-sync-led");
+    const text = document.getElementById("landing-sync-text");
+
+    const url = landingInput ? landingInput.value.trim() : dbStore.getGasUrl();
+
+    if (!url) {
+      if (badge) badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 transition-all duration-300";
+      if (led) led.className = "pulse-dot warning";
+      if (text) text.textContent = "BELUM TERHUBUNG";
+      return false;
+    }
+
+    if (text) text.textContent = "MEMERIKSA...";
+    const isConnected = await gasSyncService.testConnection(url);
+
+    if (isConnected) {
+      if (badge) badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/25 text-emerald-300 border border-emerald-500/50 flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 transition-all duration-300";
+      if (led) led.className = "pulse-dot success";
+      if (text) text.textContent = "TERHUBUNG (LIVE)";
+
+      if (showToast) {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: '⚡ Google Sheets 100% Terhubung!',
+          showConfirmButton: false,
+          timer: 1500,
+          background: '#101B24',
+          color: '#fff'
+        });
+      }
+      return true;
+    } else {
+      if (badge) badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1.5 transition-all duration-300";
+      if (led) led.className = "pulse-dot danger";
+      if (text) text.textContent = "GAGAL TERHUBUNG";
+
+      if (showToast) {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: 'Gagal Terhubung ke Google Sheets',
+          text: 'Periksa kembali URL Web App Apps Script Anda.',
+          showConfirmButton: false,
+          timer: 2000,
+          background: '#101B24',
+          color: '#fff'
+        });
+      }
+      return false;
+    }
+  }
+
+  // Auto-fill credential inputs based on role selection chip
   selectLoginRole(role) {
     this.selectedRole = role;
     const userInput = document.getElementById("login-username");
@@ -50,50 +106,13 @@ class SmartAppController {
     const cred = credentialsMap[role] || credentialsMap.admin;
     if (userInput) userInput.value = cred.user;
     if (passInput) passInput.value = cred.pass;
-
-    // Toast feedback
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'info',
-      title: `Form terisi untuk Peran: ${role.toUpperCase()}`,
-      showConfirmButton: false,
-      timer: 1200,
-      background: '#101B24',
-      color: '#fff'
-    });
   }
 
-  // Login handler triggered when user clicks "Masuk & Hubungkan Database"
+  // Login handler triggered when user clicks "Masuk Sekarang"
   loginFromLanding() {
     const landingInput = document.getElementById("landing-gas-url");
-    const userInput = document.getElementById("login-username")?.value.trim() || "";
-    const passInput = document.getElementById("login-password")?.value.trim() || "";
-
-    if (!userInput) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Username Kosong',
-        text: 'Silakan ketik Email / Username Anda!',
-        background: '#101B24',
-        color: '#fff',
-        confirmButtonColor: '#00C2A8'
-      });
-      return;
-    }
-
-    if (!passInput) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Kata Sandi Kosong',
-        text: 'Silakan ketik Kata Sandi Anda!',
-        background: '#101B24',
-        color: '#fff',
-        confirmButtonColor: '#00C2A8'
-      });
-      return;
-    }
-
+    const userInput = document.getElementById("login-username")?.value.trim() || "admin@smartclinic.com";
+    
     // Save GAS URL if provided
     if (landingInput && landingInput.value.trim()) {
       dbStore.setGasUrl(landingInput.value.trim());
@@ -117,10 +136,12 @@ class SmartAppController {
     const dot = document.getElementById("gas-sync-status-dot");
     const text = document.getElementById("gas-sync-status-text");
     const icon = document.getElementById("gas-sync-icon");
+    const navBtn = document.getElementById("navbar-sync-btn");
 
     if (!gasSyncService.getUrl()) {
       if (dot) dot.className = "pulse-dot warning";
       if (text) text.textContent = "Google Sheet: Offline";
+      if (navBtn) navBtn.className = "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-400";
       return;
     }
 
@@ -129,8 +150,9 @@ class SmartAppController {
 
     if (isConnected) {
       if (dot) dot.className = "pulse-dot success";
-      if (text) text.textContent = "Google Sheet: Connected";
+      if (text) text.textContent = "Google Sheet: Terhubung 🟢";
       if (icon) icon.className = "fas fa-check-circle text-emerald-400 text-xs ml-1";
+      if (navBtn) navBtn.className = "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-xs font-bold text-emerald-300 shadow-md shadow-emerald-500/10";
 
       const updated = await gasSyncService.syncFromSheets();
       if (updated) {
@@ -138,7 +160,8 @@ class SmartAppController {
       }
     } else {
       if (dot) dot.className = "pulse-dot warning";
-      if (text) text.textContent = "Google Sheet: Local Only";
+      if (text) text.textContent = "Google Sheet: Local Only 🟡";
+      if (navBtn) navBtn.className = "hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-950/50 border border-amber-500/30 text-xs font-semibold text-amber-300";
     }
   }
 
@@ -263,7 +286,8 @@ class SmartAppController {
       dbStore.setGasUrl(landingInput.value.trim());
     }
 
-    const roleConfig = APP_CONFIG.roles[role] || APP_CONFIG.roles.admin;
+    const roleConfig = (APP_CONFIG && APP_CONFIG.roles && APP_CONFIG.roles[role]) ? APP_CONFIG.roles[role] : { label: role, badge: "badge-teal" };
+    
     this.currentUser = {
       name: customName || (role === 'patient' ? 'Budi Santoso (Pasien)' : `Staf ${roleConfig.label}`),
       role: role,
@@ -272,20 +296,24 @@ class SmartAppController {
       avatar: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80",
       loginTime: new Date().toLocaleTimeString('id-ID')
     };
+    
     sessionStorage.setItem("SMART_USER", JSON.stringify(this.currentUser));
     dbStore.logAction("User Login", `Login sebagai ${this.currentUser.roleLabel}`);
     
+    // IMMEDIATELY switch to main app view
+    this.checkAuth();
+    this.initGasSyncStatus();
+
+    // Show non-blocking toast
     Swal.fire({
+      toast: true,
+      position: 'top-end',
       icon: 'success',
-      title: 'Login Berhasil',
-      text: `Selamat Datang, ${this.currentUser.name}!`,
+      title: `Selamat Datang, ${this.currentUser.name}!`,
+      showConfirmButton: false,
+      timer: 1800,
       background: '#101B24',
-      color: '#fff',
-      confirmButtonColor: '#00C2A8',
-      timer: 1800
-    }).then(() => {
-      this.checkAuth();
-      this.initGasSyncStatus();
+      color: '#fff'
     });
   }
 
@@ -1150,6 +1178,7 @@ class SmartAppController {
     const url = document.getElementById("setting-gas-url").value;
     dbStore.setGasUrl(url);
     this.initGasSyncStatus();
+    this.checkLandingGasConnection();
     Swal.fire({ icon: 'success', title: 'Pengaturan Disimpan!', text: 'Sistem mencoba sinkronisasi dengan Google Sheet...', background: '#101B24', color: '#fff' });
   }
 
@@ -1208,3 +1237,11 @@ class SmartAppController {
     }
   }
 }
+
+// Instantiate immediately and on DOMContentLoaded as fallback
+window.smartApp = new SmartAppController();
+document.addEventListener("DOMContentLoaded", () => {
+  if (!window.smartApp) {
+    window.smartApp = new SmartAppController();
+  }
+});
