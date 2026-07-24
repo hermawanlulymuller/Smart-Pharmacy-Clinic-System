@@ -37,7 +37,7 @@
   </script>
 
   <!-- Custom Design System Styles -->
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="./css/styles.css">
 
   <!-- Third Party Libraries (Chart.js, SweetAlert2, QRCode.js) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -111,22 +111,22 @@
 
           <!-- Quick Role Selector Chips (Instant Login 1-Click) -->
           <div class="grid grid-cols-3 gap-2">
-            <button onclick="smartApp.login('admin')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/30 text-xs font-semibold text-teal-300 border border-teal-500/40 text-center transition">
+            <button onclick="window.smartApp ? window.smartApp.login('admin') : window.doLogin('admin')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/30 text-xs font-semibold text-teal-300 border border-teal-500/40 text-center transition">
               <i class="fas fa-user-shield block mb-1 text-sm"></i> Admin
             </button>
-            <button onclick="smartApp.login('doctor')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/30 text-xs font-semibold text-teal-300 border border-teal-500/40 text-center transition">
+            <button onclick="window.smartApp ? window.smartApp.login('doctor') : window.doLogin('doctor')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/30 text-xs font-semibold text-teal-300 border border-teal-500/40 text-center transition">
               <i class="fas fa-user-md block mb-1 text-sm"></i> Dokter
             </button>
-            <button onclick="smartApp.login('pharmacist')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/30 text-xs font-semibold text-teal-300 border border-teal-500/40 text-center transition">
+            <button onclick="window.smartApp ? window.smartApp.login('pharmacist') : window.doLogin('pharmacist')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/30 text-xs font-semibold text-teal-300 border border-teal-500/40 text-center transition">
               <i class="fas fa-pills block mb-1 text-sm"></i> Apoteker
             </button>
-            <button onclick="smartApp.login('nurse')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/30 text-xs font-semibold text-teal-300 border border-teal-500/40 text-center transition">
+            <button onclick="window.smartApp ? window.smartApp.login('nurse') : window.doLogin('nurse')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/30 text-xs font-semibold text-teal-300 border border-teal-500/40 text-center transition">
               <i class="fas fa-user-nurse block mb-1 text-sm"></i> Perawat
             </button>
-            <button onclick="smartApp.login('cashier')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/30 text-xs font-semibold text-teal-300 border border-teal-500/40 text-center transition">
+            <button onclick="window.smartApp ? window.smartApp.login('cashier') : window.doLogin('cashier')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/30 text-xs font-semibold text-teal-300 border border-teal-500/40 text-center transition">
               <i class="fas fa-cash-register block mb-1 text-sm"></i> Kasir
             </button>
-            <button onclick="smartApp.login('patient')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/30 text-xs font-semibold text-teal-300 border border-teal-500/40 text-center transition">
+            <button onclick="window.smartApp ? window.smartApp.login('patient') : window.doLogin('patient')" class="p-2.5 rounded-lg bg-slate-800/80 hover:bg-teal-500/30 text-xs font-semibold text-teal-300 border border-teal-500/40 text-center transition">
               <i class="fas fa-user-injured block mb-1 text-sm"></i> Pasien
             </button>
           </div>
@@ -135,11 +135,11 @@
           <div class="space-y-4 pt-2">
             <div>
               <label class="text-xs text-slate-400 block mb-1">Email / NIP / Username</label>
-              <input id="login-username" type="text" class="form-input" placeholder="admin@smartclinic.com" value="admin@smartclinic.com" onkeypress="if(event.key==='Enter') smartApp.loginFromLanding()">
+              <input id="login-username" type="text" class="form-input" placeholder="admin@smartclinic.com" value="admin@smartclinic.com" onkeypress="if(event.key==='Enter') window.doLoginFromLanding()">
             </div>
             <div>
               <label class="text-xs text-slate-400 block mb-1">Kata Sandi</label>
-              <input id="login-password" type="password" class="form-input" placeholder="••••••••" value="admin123" onkeypress="if(event.key==='Enter') smartApp.loginFromLanding()">
+              <input id="login-password" type="password" class="form-input" placeholder="••••••••" value="admin123" onkeypress="if(event.key==='Enter') window.doLoginFromLanding()">
             </div>
 
             <!-- Google Sheets API Connection Field & Glowing LED Status Indicator -->
@@ -157,8 +157,8 @@
               </div>
               
               <div class="flex gap-2">
-                <input id="landing-gas-url" type="text" placeholder="Paste URL Web App Google Apps Script di sini..." class="form-input text-xs bg-slate-950 font-mono flex-1" oninput="smartApp.checkLandingGasConnection()">
-                <button onclick="smartApp.checkLandingGasConnection(true)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-teal-300 border border-teal-500/30 text-xs font-bold rounded-lg shrink-0 flex items-center gap-1">
+                <input id="landing-gas-url" type="text" placeholder="Paste URL Web App Google Apps Script di sini..." class="form-input text-xs bg-slate-950 font-mono flex-1" oninput="window.smartApp && window.smartApp.checkLandingGasConnection()">
+                <button onclick="window.smartApp && window.smartApp.checkLandingGasConnection(true)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-teal-300 border border-teal-500/30 text-xs font-bold rounded-lg shrink-0 flex items-center gap-1">
                   <i class="fas fa-plug"></i> Tes Connection
                 </button>
               </div>
@@ -171,7 +171,7 @@
               <a href="#" onclick="Swal.fire('Lupa Password', 'Silakan hubungi Administrator Sistem Luly Agency untuk reset password NIP.', 'info')" class="text-teal-400 hover:underline">Lupa Password?</a>
             </div>
 
-            <button onclick="smartApp.loginFromLanding()" class="w-full py-3 glow-teal-btn rounded-xl font-bold text-sm tracking-wide flex items-center justify-center gap-2">
+            <button onclick="window.doLoginFromLanding()" class="w-full py-3 glow-teal-btn rounded-xl font-bold text-sm tracking-wide flex items-center justify-center gap-2">
               <i class="fas fa-sign-in-alt"></i> Masuk Sekarang
             </button>
           </div>
@@ -256,24 +256,24 @@
       <div class="flex items-center gap-3">
         
         <!-- Live Google Sheet Sync Status Badge & Button (With Glowing LED) -->
-        <button id="navbar-sync-btn" onclick="smartApp.triggerManualSync()" title="Klik untuk Sinkronkan dengan Google Sheets" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold hover:border-teal-500/40 transition">
+        <button id="navbar-sync-btn" onclick="window.smartApp && window.smartApp.triggerManualSync()" title="Klik untuk Sinkronkan dengan Google Sheets" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold hover:border-teal-500/40 transition">
           <span id="gas-sync-status-dot" class="pulse-dot warning"></span>
           <span id="gas-sync-status-text" class="text-slate-300">Google Sheet: LocalStorage</span>
           <i id="gas-sync-icon" class="fas fa-sync text-teal-400 text-xs ml-1"></i>
         </button>
 
         <!-- Emergency Call Button -->
-        <button onclick="smartApp.openEmergencyModal()" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold hover:bg-rose-500/30 flex items-center gap-1.5">
+        <button onclick="window.smartApp && window.smartApp.openEmergencyModal()" class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold hover:bg-rose-500/30 flex items-center gap-1.5">
           <i class="fas fa-phone-alt animate-pulse"></i> <span class="hidden md:inline" data-i18n="emergencyBtn">Panggilan Darurat</span>
         </button>
 
         <!-- Language Switcher -->
-        <button onclick="smartApp.toggleLanguage()" class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white flex items-center gap-1">
+        <button onclick="window.smartApp && window.smartApp.toggleLanguage()" class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white flex items-center gap-1">
           <i class="fas fa-globe text-teal-400"></i> <span id="current-lang-label">ID</span>
         </button>
 
         <!-- Theme Toggle -->
-        <button onclick="smartApp.toggleTheme()" class="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+        <button onclick="window.smartApp && window.smartApp.toggleTheme()" class="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
           <i id="theme-icon" class="fas fa-moon text-amber-400"></i>
         </button>
 
@@ -283,7 +283,7 @@
             <div id="user-display-name" class="text-xs font-bold text-white">Admin System</div>
             <div id="user-display-role" class="badge-status badge-teal">Administrator</div>
           </div>
-          <button onclick="smartApp.logout()" title="Logout" class="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 text-rose-400 hover:bg-rose-500/20 flex items-center justify-center">
+          <button onclick="window.smartApp && window.smartApp.logout()" title="Logout" class="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 text-rose-400 hover:bg-rose-500/20 flex items-center justify-center">
             <i class="fas fa-power-off"></i>
           </button>
         </div>
@@ -297,54 +297,54 @@
       <aside id="app-sidebar" class="w-64 border-r border-slate-800/80 bg-[#08121A]/95 backdrop-blur-lg flex flex-col p-4 space-y-1 overflow-y-auto transition-transform duration-300 absolute lg:relative z-20 h-[calc(100vh-4rem)] -translate-x-full lg:translate-x-0">
         
         <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 py-2">Navigasi Utama</div>
-        <a onclick="smartApp.loadModule('dashboard')" data-module="dashboard" class="nav-link active">
+        <a onclick="window.smartApp && window.smartApp.loadModule('dashboard')" data-module="dashboard" class="nav-link active">
           <i class="fas fa-chart-pie"></i> <span data-i18n="navDashboard">Dashboard Utama</span>
         </a>
-        <a onclick="smartApp.loadModule('patients')" data-module="patients" class="nav-link">
+        <a onclick="window.smartApp && window.smartApp.loadModule('patients')" data-module="patients" class="nav-link">
           <i class="fas fa-user-injured"></i> <span data-i18n="navPatients">Pasien & Rekam Medis</span>
         </a>
-        <a onclick="smartApp.loadModule('doctors')" data-module="doctors" class="nav-link">
+        <a onclick="window.smartApp && window.smartApp.loadModule('doctors')" data-module="doctors" class="nav-link">
           <i class="fas fa-user-md"></i> <span data-i18n="navDoctors">Dokter & Jadwal</span>
         </a>
-        <a onclick="smartApp.loadModule('appointments')" data-module="appointments" class="nav-link">
+        <a onclick="window.smartApp && window.smartApp.loadModule('appointments')" data-module="appointments" class="nav-link">
           <i class="fas fa-calendar-check"></i> <span data-i18n="navAppointments">Janji Temu & Antrean</span>
         </a>
-        <a onclick="smartApp.loadModule('medicine')" data-module="medicine" class="nav-link">
+        <a onclick="window.smartApp && window.smartApp.loadModule('medicine')" data-module="medicine" class="nav-link">
           <i class="fas fa-pills"></i> <span data-i18n="navMedicine">Apotek & Stok Obat</span>
         </a>
-        <a onclick="smartApp.loadModule('consultation')" data-module="consultation" class="nav-link">
+        <a onclick="window.smartApp && window.smartApp.loadModule('consultation')" data-module="consultation" class="nav-link">
           <i class="fas fa-comments-medical"></i> <span data-i18n="navConsultation">Telemedisin Room</span>
         </a>
-        <a onclick="smartApp.loadModule('ai-assistant')" data-module="ai-assistant" class="nav-link">
+        <a onclick="window.smartApp && window.smartApp.loadModule('ai-assistant')" data-module="ai-assistant" class="nav-link">
           <i class="fas fa-robot text-teal-400"></i> <span data-i18n="navAiAssistant">AI Health Assistant</span>
         </a>
 
         <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 py-2 pt-4">Stasiun Kerja Klinis</div>
-        <a onclick="smartApp.loadModule('nurse')" data-module="nurse" class="nav-link">
+        <a onclick="window.smartApp && window.smartApp.loadModule('nurse')" data-module="nurse" class="nav-link">
           <i class="fas fa-stethoscope"></i> <span data-i18n="navNurse">Stasiun Perawat</span>
         </a>
-        <a onclick="smartApp.loadModule('pharmacist')" data-module="pharmacist" class="nav-link">
+        <a onclick="window.smartApp && window.smartApp.loadModule('pharmacist')" data-module="pharmacist" class="nav-link">
           <i class="fas fa-prescription-bottle-alt"></i> <span data-i18n="navPharmacist">Dispensing Apoteker</span>
         </a>
-        <a onclick="smartApp.loadModule('cashier')" data-module="cashier" class="nav-link">
+        <a onclick="window.smartApp && window.smartApp.loadModule('cashier')" data-module="cashier" class="nav-link">
           <i class="fas fa-cash-register"></i> <span data-i18n="navCashier">Kasir & Billing (POS)</span>
         </a>
 
         <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 py-2 pt-4">Manajemen & Laporan</div>
-        <a onclick="smartApp.loadModule('reports')" data-module="reports" class="nav-link">
+        <a onclick="window.smartApp && window.smartApp.loadModule('reports')" data-module="reports" class="nav-link">
           <i class="fas fa-file-invoice-dollar"></i> <span data-i18n="navReports">Laporan & Keuangan</span>
         </a>
-        <a onclick="smartApp.loadModule('settings')" data-module="settings" class="nav-link">
+        <a onclick="window.smartApp && window.smartApp.loadModule('settings')" data-module="settings" class="nav-link">
           <i class="fas fa-sliders-h"></i> <span data-i18n="navSettings">Pengaturan & API</span>
         </a>
 
         <div class="pt-6">
           <div class="p-3 rounded-xl bg-slate-900 border border-teal-500/20 space-y-2">
             <div class="text-xs font-bold text-teal-400">Mode Tampilan Khusus</div>
-            <button onclick="smartApp.toggleQueueTV()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-white rounded font-medium flex items-center justify-center gap-1.5">
+            <button onclick="window.smartApp && window.smartApp.toggleQueueTV()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-white rounded font-medium flex items-center justify-center gap-1.5">
               <i class="fas fa-tv"></i> Layar TV Antrean
             </button>
-            <button onclick="smartApp.toggleKioskMode()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-white rounded font-medium flex items-center justify-center gap-1.5">
+            <button onclick="window.smartApp && window.smartApp.toggleKioskMode()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-white rounded font-medium flex items-center justify-center gap-1.5">
               <i class="fas fa-tablet-alt"></i> Mandiri Check-in Kiosk
             </button>
           </div>
@@ -364,10 +364,10 @@
               <p class="text-xs text-slate-400">Ikhtisar real-time operasional klinik & apotek hari ini.</p>
             </div>
             <div class="flex gap-2">
-              <button onclick="smartApp.triggerManualSync()" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-teal-300 border border-teal-500/30 rounded-xl text-xs font-bold flex items-center gap-2">
+              <button onclick="window.smartApp && window.smartApp.triggerManualSync()" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-teal-300 border border-teal-500/30 rounded-xl text-xs font-bold flex items-center gap-2">
                 <i class="fas fa-sync animate-spin-slow"></i> Sync Google Sheet
               </button>
-              <button onclick="smartApp.addNewPatientModal()" class="glow-teal-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
+              <button onclick="window.smartApp && window.smartApp.addNewPatientModal()" class="glow-teal-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
                 <i class="fas fa-user-plus"></i> <span data-i18n="addPatient">+ Tambah Pasien</span>
               </button>
             </div>
@@ -477,7 +477,7 @@
               <h2 class="text-2xl font-bold text-white">Pasien & Rekam Medis</h2>
               <p class="text-xs text-slate-400">Database pasien terintegrasi dengan Patient QR Card & Rekam Medis Timeline.</p>
             </div>
-            <button onclick="smartApp.addNewPatientModal()" class="glow-teal-btn px-4 py-2 rounded-xl text-xs font-bold">
+            <button onclick="window.smartApp && window.smartApp.addNewPatientModal()" class="glow-teal-btn px-4 py-2 rounded-xl text-xs font-bold">
               <i class="fas fa-plus mr-1"></i> Tambah Pasien Baru
             </button>
           </div>
@@ -610,8 +610,8 @@
               </div>
 
               <div class="p-3 border-t border-slate-800 flex items-center gap-2">
-                <input id="telemedicine-chat-input" type="text" placeholder="Ketik pesan konsultasi..." class="form-input text-xs" onkeypress="if(event.key==='Enter') smartApp.sendConsultationMessage()">
-                <button onclick="smartApp.sendConsultationMessage()" class="glow-teal-btn px-4 py-2 rounded-xl text-xs font-bold shrink-0">
+                <input id="telemedicine-chat-input" type="text" placeholder="Ketik pesan konsultasi..." class="form-input text-xs" onkeypress="if(event.key==='Enter') window.smartApp && window.smartApp.sendConsultationMessage()">
+                <button onclick="window.smartApp && window.smartApp.sendConsultationMessage()" class="glow-teal-btn px-4 py-2 rounded-xl text-xs font-bold shrink-0">
                   Kirim
                 </button>
               </div>
@@ -661,8 +661,8 @@
               </div>
 
               <div class="p-3 border-t border-slate-800 flex items-center gap-2">
-                <input id="ai-assistant-input" type="text" placeholder="Tanyakan seputar obat, penyakit, atau kalkulator BMI..." class="form-input text-xs" onkeypress="if(event.key==='Enter') smartApp.sendAiAssistantMessage()">
-                <button onclick="smartApp.sendAiAssistantMessage()" class="glow-teal-btn px-4 py-2 rounded-xl text-xs font-bold">
+                <input id="ai-assistant-input" type="text" placeholder="Tanyakan seputar obat, penyakit, atau kalkulator BMI..." class="form-input text-xs" onkeypress="if(event.key==='Enter') window.smartApp && window.smartApp.sendAiAssistantMessage()">
+                <button onclick="window.smartApp && window.smartApp.sendAiAssistantMessage()" class="glow-teal-btn px-4 py-2 rounded-xl text-xs font-bold">
                   Tanya AI
                 </button>
               </div>
@@ -672,13 +672,13 @@
             <div class="lg:col-span-4 space-y-4">
               <div class="glass-card p-4 space-y-3">
                 <h3 class="font-bold text-white text-sm"><i class="fas fa-calculator text-teal-400 mr-1"></i> Instant Health Calculators</h3>
-                <button onclick="smartApp.sendAiAssistantMessage('Berapa standar BMI ideal dan cara menghitungnya?')" class="w-full text-left p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800">
+                <button onclick="window.smartApp && window.smartApp.sendAiAssistantMessage('Berapa standar BMI ideal dan cara menghitungnya?')" class="w-full text-left p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800">
                   📊 Kalkulator BMI & Berat Ideal
                 </button>
-                <button onclick="smartApp.sendAiAssistantMessage('Berapa kebutuhan air minum harian saya?')" class="w-full text-left p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800">
+                <button onclick="window.smartApp && window.smartApp.sendAiAssistantMessage('Berapa kebutuhan air minum harian saya?')" class="w-full text-left p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800">
                   💧 Kalkulator Konsumsi Air
                 </button>
-                <button onclick="smartApp.sendAiAssistantMessage('Berikan informasi dosis dan efek samping obat Paracetamol.')" class="w-full text-left p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800">
+                <button onclick="window.smartApp && window.smartApp.sendAiAssistantMessage('Berikan informasi dosis dan efek samping obat Paracetamol.')" class="w-full text-left p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800">
                   💊 Cek Interaksi Obat
                 </button>
               </div>
@@ -737,7 +737,7 @@
                   <span>Total Tagihan:</span>
                   <span id="pos-grand-total" class="text-emerald-400 text-lg">Rp 0</span>
                 </div>
-                <button onclick="smartApp.processPOSPayment()" class="w-full py-3 glow-teal-btn rounded-xl font-bold text-sm">
+                <button onclick="window.smartApp && window.smartApp.processPOSPayment()" class="w-full py-3 glow-teal-btn rounded-xl font-bold text-sm">
                   Proses Pembayaran (POS)
                 </button>
               </div>
@@ -784,13 +784,13 @@
               </div>
 
               <div class="flex flex-wrap gap-2">
-                <button onclick="smartApp.saveSettings()" class="px-4 py-2 glow-teal-btn rounded-xl text-xs font-bold">
+                <button onclick="window.smartApp && window.smartApp.saveSettings()" class="px-4 py-2 glow-teal-btn rounded-xl text-xs font-bold">
                   Simpan URL API
                 </button>
-                <button onclick="smartApp.triggerManualSync()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold">
+                <button onclick="window.smartApp && window.smartApp.triggerManualSync()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold">
                   <i class="fas fa-sync mr-1"></i> Sync Realtime Sekarang
                 </button>
-                <button onclick="smartApp.showGasCodeModal()" class="px-4 py-2 bg-slate-800 text-teal-300 border border-teal-500/30 rounded-xl text-xs font-bold hover:bg-slate-700">
+                <button onclick="window.smartApp && window.smartApp.showGasCodeModal()" class="px-4 py-2 bg-slate-800 text-teal-300 border border-teal-500/30 rounded-xl text-xs font-bold hover:bg-slate-700">
                   <i class="fas fa-code mr-1"></i> Ambil Code.gs
                 </button>
               </div>
@@ -823,12 +823,12 @@
   </div>
 
 
-  <!-- Application Scripts -->
-  <script src="js/config.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/ai-service.js"></script>
-  <script src="js/google-apps-script.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Application Scripts with Vercel Static Compatible Paths -->
+  <script src="./js/config.js"></script>
+  <script src="./js/data.js"></script>
+  <script src="./js/ai-service.js"></script>
+  <script src="./js/google-apps-script.js"></script>
+  <script src="./js/app.js"></script>
 
 </body>
 </html>

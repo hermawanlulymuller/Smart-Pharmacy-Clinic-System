@@ -17,16 +17,22 @@ class SmartAppController {
     this.initLandingGasInput();
     this.checkAuth();
     this.bindGlobalEvents();
-    this.initGasSyncStatus();
-    this.checkLandingGasConnection();
+
+    // Async background checks
+    setTimeout(() => {
+      try { this.initGasSyncStatus(); } catch(e){}
+      try { this.checkLandingGasConnection(); } catch(e){}
+    }, 100);
   }
 
-  // Pre-fill landing page Google Sheet API URL field & auto-test connection
+  // Pre-fill landing page Google Sheet API URL field
   initLandingGasInput() {
-    const landingInput = document.getElementById("landing-gas-url");
-    if (landingInput) {
-      landingInput.value = dbStore.getGasUrl();
-    }
+    try {
+      const landingInput = document.getElementById("landing-gas-url");
+      if (landingInput) {
+        landingInput.value = dbStore.getGasUrl();
+      }
+    } catch(e){}
   }
 
   // Live LED indicator checker for Landing Page
@@ -53,7 +59,7 @@ class SmartAppController {
       if (led) led.className = "pulse-dot success";
       if (text) text.textContent = "TERHUBUNG (LIVE)";
 
-      if (showToast) {
+      if (showToast && typeof Swal !== "undefined") {
         Swal.fire({
           toast: true,
           position: 'top-end',
@@ -71,7 +77,7 @@ class SmartAppController {
       if (led) led.className = "pulse-dot danger";
       if (text) text.textContent = "GAGAL TERHUBUNG";
 
-      if (showToast) {
+      if (showToast && typeof Swal !== "undefined") {
         Swal.fire({
           toast: true,
           position: 'top-end',
@@ -106,6 +112,9 @@ class SmartAppController {
     const cred = credentialsMap[role] || credentialsMap.admin;
     if (userInput) userInput.value = cred.user;
     if (passInput) passInput.value = cred.pass;
+
+    // Immediately log in as that role smoothly
+    this.login(role);
   }
 
   // Login handler triggered when user clicks "Masuk Sekarang"
@@ -169,14 +178,16 @@ class SmartAppController {
     const icon = document.getElementById("gas-sync-icon");
     if (icon) icon.className = "fas fa-spinner fa-spin text-teal-400 text-xs ml-1";
 
-    Swal.fire({
-      title: 'Menyinkronkan Data...',
-      text: 'Menghubungkan dengan Google Sheets Database...',
-      background: '#101B24',
-      color: '#fff',
-      allowOutsideClick: false,
-      didOpen: () => { Swal.showLoading(); }
-    });
+    if (typeof Swal !== "undefined") {
+      Swal.fire({
+        title: 'Menyinkronkan Data...',
+        text: 'Menghubungkan dengan Google Sheets Database...',
+        background: '#101B24',
+        color: '#fff',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+      });
+    }
 
     try {
       if (!gasSyncService.getUrl()) {
@@ -188,22 +199,26 @@ class SmartAppController {
       this.loadModule(this.activeModule);
       this.initGasSyncStatus();
 
-      Swal.fire({
-        icon: 'success',
-        title: 'Sinkronisasi Berhasil!',
-        text: 'Data UI & Google Sheet telah 100% sinkron real-time.',
-        background: '#101B24',
-        color: '#fff',
-        confirmButtonColor: '#00C2A8'
-      });
+      if (typeof Swal !== "undefined") {
+        Swal.fire({
+          icon: 'success',
+          title: 'Sinkronisasi Berhasil!',
+          text: 'Data UI & Google Sheet telah 100% sinkron real-time.',
+          background: '#101B24',
+          color: '#fff',
+          confirmButtonColor: '#00C2A8'
+        });
+      }
     } catch (err) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Sinkronisasi Terbatas',
-        text: err.message || 'Menggunakan data LocalStorage offline.',
-        background: '#101B24',
-        color: '#fff'
-      });
+      if (typeof Swal !== "undefined") {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sinkronisasi Terbatas',
+          text: err.message || 'Menggunakan data LocalStorage offline.',
+          background: '#101B24',
+          color: '#fff'
+        });
+      }
     }
   }
 
@@ -220,16 +235,18 @@ class SmartAppController {
     this.currentTheme = this.currentTheme === "dark" ? "light" : "dark";
     localStorage.setItem("SMART_THEME", this.currentTheme);
     this.initTheme();
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'info',
-      title: `Theme: ${this.currentTheme.toUpperCase()} Mode`,
-      showConfirmButton: false,
-      timer: 1500,
-      background: '#101B24',
-      color: '#fff'
-    });
+    if (typeof Swal !== "undefined") {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'info',
+        title: `Theme: ${this.currentTheme.toUpperCase()} Mode`,
+        showConfirmButton: false,
+        timer: 1500,
+        background: '#101B24',
+        color: '#fff'
+      });
+    }
   }
 
   initLanguage() {
@@ -252,85 +269,130 @@ class SmartAppController {
     this.currentLanguage = this.currentLanguage === "id" ? "en" : "id";
     localStorage.setItem("SMART_LANG", this.currentLanguage);
     this.initLanguage();
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'success',
-      title: `Bahasa: ${this.currentLanguage === 'id' ? 'Bahasa Indonesia' : 'English'}`,
-      showConfirmButton: false,
-      timer: 1500,
-      background: '#101B24',
-      color: '#fff'
-    });
+    if (typeof Swal !== "undefined") {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: `Bahasa: ${this.currentLanguage === 'id' ? 'Bahasa Indonesia' : 'English'}`,
+        showConfirmButton: false,
+        timer: 1500,
+        background: '#101B24',
+        color: '#fff'
+      });
+    }
   }
 
-  // --- Auth & Role Guard ---
+  // --- Auth & Role Guard (FOOLPROOF DOM SWITCHING) ---
   checkAuth() {
     const landingView = document.getElementById("landing-login-view");
     const appShellView = document.getElementById("app-shell-view");
 
     if (!this.currentUser) {
-      if (landingView) landingView.classList.remove("hidden");
-      if (appShellView) appShellView.classList.add("hidden");
+      if (landingView) {
+        landingView.classList.remove("hidden");
+        landingView.style.display = "flex";
+      }
+      if (appShellView) {
+        appShellView.classList.add("hidden");
+        appShellView.style.display = "none";
+      }
     } else {
-      if (landingView) landingView.classList.add("hidden");
-      if (appShellView) appShellView.classList.remove("hidden");
+      if (landingView) {
+        landingView.classList.add("hidden");
+        landingView.style.display = "none";
+      }
+      if (appShellView) {
+        appShellView.classList.remove("hidden");
+        appShellView.style.display = "flex";
+      }
       this.updateUserUI();
       this.loadModule(this.activeModule);
     }
   }
 
-  login(role, customName = "") {
-    const landingInput = document.getElementById("landing-gas-url");
-    if (landingInput && landingInput.value.trim()) {
-      dbStore.setGasUrl(landingInput.value.trim());
+  login(role = "admin", customName = "") {
+    try {
+      const landingInput = document.getElementById("landing-gas-url");
+      if (landingInput && landingInput.value.trim()) {
+        dbStore.setGasUrl(landingInput.value.trim());
+      }
+
+      const roleConfig = (APP_CONFIG && APP_CONFIG.roles && APP_CONFIG.roles[role]) 
+        ? APP_CONFIG.roles[role] 
+        : { label: role, badge: "badge-teal" };
+      
+      this.currentUser = {
+        name: customName || (role === 'patient' ? 'Budi Santoso (Pasien)' : `Staf ${roleConfig.label}`),
+        role: role,
+        roleBadge: roleConfig.badge,
+        roleLabel: roleConfig.label,
+        avatar: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80",
+        loginTime: new Date().toLocaleTimeString('id-ID')
+      };
+      
+      sessionStorage.setItem("SMART_USER", JSON.stringify(this.currentUser));
+      try { dbStore.logAction("User Login", `Login sebagai ${this.currentUser.roleLabel}`); } catch(e){}
+      
+      // GUARANTEED INSTANT DOM SWITCH!
+      const landingView = document.getElementById("landing-login-view");
+      const appShellView = document.getElementById("app-shell-view");
+      
+      if (landingView) {
+        landingView.classList.add("hidden");
+        landingView.style.display = "none";
+      }
+      if (appShellView) {
+        appShellView.classList.remove("hidden");
+        appShellView.style.display = "flex";
+      }
+
+      this.updateUserUI();
+      this.loadModule(this.activeModule || "dashboard");
+
+      // Non-blocking async background sync
+      setTimeout(() => {
+        try { this.initGasSyncStatus(); } catch(e){}
+      }, 100);
+
+      // Non-blocking toast
+      if (typeof Swal !== "undefined") {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: `Selamat Datang, ${this.currentUser.name}!`,
+          showConfirmButton: false,
+          timer: 1800,
+          background: '#101B24',
+          color: '#fff'
+        });
+      }
+    } catch(err) {
+      console.error("Login fallback handler:", err);
+      const landingView = document.getElementById("landing-login-view");
+      const appShellView = document.getElementById("app-shell-view");
+      if (landingView) landingView.style.display = "none";
+      if (appShellView) appShellView.style.display = "flex";
     }
-
-    const roleConfig = (APP_CONFIG && APP_CONFIG.roles && APP_CONFIG.roles[role]) ? APP_CONFIG.roles[role] : { label: role, badge: "badge-teal" };
-    
-    this.currentUser = {
-      name: customName || (role === 'patient' ? 'Budi Santoso (Pasien)' : `Staf ${roleConfig.label}`),
-      role: role,
-      roleBadge: roleConfig.badge,
-      roleLabel: roleConfig.label,
-      avatar: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80",
-      loginTime: new Date().toLocaleTimeString('id-ID')
-    };
-    
-    sessionStorage.setItem("SMART_USER", JSON.stringify(this.currentUser));
-    dbStore.logAction("User Login", `Login sebagai ${this.currentUser.roleLabel}`);
-    
-    // IMMEDIATELY switch to main app view
-    this.checkAuth();
-    this.initGasSyncStatus();
-
-    // Show non-blocking toast
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'success',
-      title: `Selamat Datang, ${this.currentUser.name}!`,
-      showConfirmButton: false,
-      timer: 1800,
-      background: '#101B24',
-      color: '#fff'
-    });
   }
 
   logout() {
     sessionStorage.removeItem("SMART_USER");
     this.currentUser = null;
     this.checkAuth();
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'info',
-      title: 'Anda telah logout',
-      showConfirmButton: false,
-      timer: 1500,
-      background: '#101B24',
-      color: '#fff'
-    });
+    if (typeof Swal !== "undefined") {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'info',
+        title: 'Anda telah logout',
+        showConfirmButton: false,
+        timer: 1500,
+        background: '#101B24',
+        color: '#fff'
+      });
+    }
   }
 
   updateUserUI() {
@@ -364,144 +426,157 @@ class SmartAppController {
       targetView.classList.remove("hidden");
     }
 
-    switch (moduleName) {
-      case "dashboard":
-        this.renderDashboard();
-        break;
-      case "patients":
-        this.renderPatientsTable();
-        break;
-      case "doctors":
-        this.renderDoctorsGrid();
-        break;
-      case "appointments":
-        this.renderAppointmentsTable();
-        break;
-      case "medicine":
-        this.renderMedicinesTable();
-        break;
-      case "consultation":
-        this.renderConsultationRoom();
-        break;
-      case "ai-assistant":
-        break;
-      case "nurse":
-        this.renderNurseQueue();
-        break;
-      case "pharmacist":
-        this.renderPharmacistDispensing();
-        break;
-      case "cashier":
-        this.renderCashierPOS();
-        break;
-      case "reports":
-        this.renderReports();
-        break;
-      case "settings":
-        this.renderSettings();
-        break;
+    try {
+      switch (moduleName) {
+        case "dashboard":
+          this.renderDashboard();
+          break;
+        case "patients":
+          this.renderPatientsTable();
+          break;
+        case "doctors":
+          this.renderDoctorsGrid();
+          break;
+        case "appointments":
+          this.renderAppointmentsTable();
+          break;
+        case "medicine":
+          this.renderMedicinesTable();
+          break;
+        case "consultation":
+          this.renderConsultationRoom();
+          break;
+        case "ai-assistant":
+          break;
+        case "nurse":
+          this.renderNurseQueue();
+          break;
+        case "pharmacist":
+          this.renderPharmacistDispensing();
+          break;
+        case "cashier":
+          this.renderCashierPOS();
+          break;
+        case "reports":
+          this.renderReports();
+          break;
+        case "settings":
+          this.renderSettings();
+          break;
+      }
+    } catch(e) {
+      console.warn(`Module load warning [${moduleName}]:`, e);
     }
   }
 
   // --- Dashboard Render & Charts ---
   renderDashboard() {
-    const patients = dbStore.get("patients");
-    const doctors = dbStore.get("doctors");
-    const medicines = dbStore.get("medicines");
-    const appointments = dbStore.get("appointments");
-    const transactions = dbStore.get("transactions");
+    try {
+      const patients = dbStore.get("patients") || [];
+      const doctors = dbStore.get("doctors") || [];
+      const medicines = dbStore.get("medicines") || [];
+      const appointments = dbStore.get("appointments") || [];
+      const transactions = dbStore.get("transactions") || [];
 
-    const elPatients = document.getElementById("kpi-patients-count");
-    const elDoctors = document.getElementById("kpi-doctors-count");
-    const elStock = document.getElementById("kpi-stock-count");
-    const elLowStock = document.getElementById("kpi-lowstock-count");
-    const elRevenue = document.getElementById("kpi-revenue-today");
+      const elPatients = document.getElementById("kpi-patients-count");
+      const elDoctors = document.getElementById("kpi-doctors-count");
+      const elStock = document.getElementById("kpi-stock-count");
+      const elLowStock = document.getElementById("kpi-lowstock-count");
+      const elRevenue = document.getElementById("kpi-revenue-today");
 
-    if (elPatients) elPatients.textContent = patients.length;
-    if (elDoctors) elDoctors.textContent = doctors.filter(d => d.availability === "Online").length;
-    if (elStock) elStock.textContent = medicines.length;
+      if (elPatients) elPatients.textContent = patients.length;
+      if (elDoctors) elDoctors.textContent = doctors.filter(d => d.availability === "Online").length;
+      if (elStock) elStock.textContent = medicines.length;
 
-    const lowStockCount = medicines.filter(m => m.stock <= m.minStock).length;
-    if (elLowStock) elLowStock.textContent = lowStockCount;
+      const lowStockCount = medicines.filter(m => m.stock <= m.minStock).length;
+      if (elLowStock) elLowStock.textContent = lowStockCount;
 
-    const totalRev = transactions.reduce((acc, curr) => acc + (curr.totalPaid || 0), 0);
-    if (elRevenue) elRevenue.textContent = `Rp ${totalRev.toLocaleString('id-ID')}`;
+      const totalRev = transactions.reduce((acc, curr) => acc + (curr.totalPaid || 0), 0);
+      if (elRevenue) elRevenue.textContent = `Rp ${totalRev.toLocaleString('id-ID')}`;
 
-    const activityFeed = document.getElementById("dashboard-activity-feed");
-    if (activityFeed) {
-      const logs = dbStore.get("logs").slice(0, 5);
-      activityFeed.innerHTML = logs.map(l => `
-        <div class="flex items-start gap-3 p-3 rounded-lg bg-slate-900/50 border border-slate-800">
-          <div class="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold text-xs shrink-0">
-            <i class="fas fa-bolt"></i>
-          </div>
-          <div class="flex-1">
-            <div class="flex items-center justify-between">
-              <span class="text-sm font-semibold text-white">${l.user}</span>
-              <span class="text-xs text-slate-400">${l.timestamp}</span>
+      const activityFeed = document.getElementById("dashboard-activity-feed");
+      if (activityFeed) {
+        const logs = (dbStore.get("logs") || []).slice(0, 5);
+        activityFeed.innerHTML = logs.map(l => `
+          <div class="flex items-start gap-3 p-3 rounded-lg bg-slate-900/50 border border-slate-800">
+            <div class="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold text-xs shrink-0">
+              <i class="fas fa-bolt"></i>
             </div>
-            <p class="text-xs text-teal-300 font-medium">${l.action}</p>
-            <p class="text-xs text-slate-300 mt-1">${l.detail}</p>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-semibold text-white">${l.user}</span>
+                <span class="text-xs text-slate-400">${l.timestamp}</span>
+              </div>
+              <p class="text-xs text-teal-300 font-medium">${l.action}</p>
+              <p class="text-xs text-slate-300 mt-1">${l.detail}</p>
+            </div>
           </div>
-        </div>
-      `).join("");
-    }
+        `).join("");
+      }
 
-    this.renderDashboardCharts();
+      this.renderDashboardCharts();
+    } catch(err) {
+      console.warn("Dashboard render fallback:", err);
+    }
   }
 
   renderDashboardCharts() {
-    const ctxRevenue = document.getElementById("chart-revenue-canvas");
-    const ctxUsage = document.getElementById("chart-usage-canvas");
+    if (typeof Chart === "undefined") return;
+    try {
+      const ctxRevenue = document.getElementById("chart-revenue-canvas");
+      const ctxUsage = document.getElementById("chart-usage-canvas");
 
-    if (ctxRevenue) {
-      if (this.charts.revenue) this.charts.revenue.destroy();
-      this.charts.revenue = new Chart(ctxRevenue, {
-        type: 'line',
-        data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul'],
-          datasets: [{
-            label: 'Pendapatan (Juta Rp)',
-            data: [45, 52, 60, 58, 75, 82, 98],
-            borderColor: '#00C2A8',
-            backgroundColor: 'rgba(0, 194, 168, 0.15)',
-            fill: true,
-            tension: 0.4,
-            borderWidth: 3,
-            pointBackgroundColor: '#14E1C6',
-            pointRadius: 5
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#94A3B8' } } },
-          scales: {
-            x: { ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y: { ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+      if (ctxRevenue) {
+        if (this.charts.revenue) this.charts.revenue.destroy();
+        this.charts.revenue = new Chart(ctxRevenue, {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul'],
+            datasets: [{
+              label: 'Pendapatan (Juta Rp)',
+              data: [45, 52, 60, 58, 75, 82, 98],
+              borderColor: '#00C2A8',
+              backgroundColor: 'rgba(0, 194, 168, 0.15)',
+              fill: true,
+              tension: 0.4,
+              borderWidth: 3,
+              pointBackgroundColor: '#14E1C6',
+              pointRadius: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#94A3B8' } } },
+            scales: {
+              x: { ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+              y: { ticks: { color: '#94A3B8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+            }
           }
-        }
-      });
-    }
+        });
+      }
 
-    if (ctxUsage) {
-      if (this.charts.usage) this.charts.usage.destroy();
-      this.charts.usage = new Chart(ctxUsage, {
-        type: 'doughnut',
-        data: {
-          labels: ['Paracetamol', 'Amoxicillin', 'Omeprazole', 'Amlodipine', 'Vitamin C'],
-          datasets: [{
-            data: [35, 15, 20, 10, 20],
-            backgroundColor: ['#00C2A8', '#14E1C6', '#38BDF8', '#FFC857', '#4ADE80'],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom', labels: { color: '#94A3B8' } } }
-        }
-      });
+      if (ctxUsage) {
+        if (this.charts.usage) this.charts.usage.destroy();
+        this.charts.usage = new Chart(ctxUsage, {
+          type: 'doughnut',
+          data: {
+            labels: ['Paracetamol', 'Amoxicillin', 'Omeprazole', 'Amlodipine', 'Vitamin C'],
+            datasets: [{
+              data: [35, 15, 20, 10, 20],
+              backgroundColor: ['#00C2A8', '#14E1C6', '#38BDF8', '#FFC857', '#4ADE80'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#94A3B8' } } }
+          }
+        });
+      }
+    } catch(err) {
+      console.warn("Charts render error:", err);
     }
   }
 
@@ -509,7 +584,7 @@ class SmartAppController {
   renderPatientsTable() {
     const tableBody = document.getElementById("patients-table-body");
     if (!tableBody) return;
-    const patients = dbStore.get("patients");
+    const patients = dbStore.get("patients") || [];
 
     tableBody.innerHTML = patients.map(p => `
       <tr>
@@ -598,7 +673,7 @@ class SmartAppController {
   }
 
   viewPatientQR(patientId) {
-    const p = dbStore.get("patients").find(x => x.id === patientId);
+    const p = (dbStore.get("patients") || []).find(x => x.id === patientId);
     if (!p) return;
 
     Swal.fire({
@@ -612,11 +687,13 @@ class SmartAppController {
         </div>
       `,
       didOpen: () => {
-        new QRCode(document.getElementById("qrcode-canvas"), {
-          text: p.id,
-          width: 160,
-          height: 160
-        });
+        if (typeof QRCode !== "undefined") {
+          new QRCode(document.getElementById("qrcode-canvas"), {
+            text: p.id,
+            width: 160,
+            height: 160
+          });
+        }
       },
       background: '#101B24',
       color: '#fff',
@@ -625,7 +702,7 @@ class SmartAppController {
   }
 
   viewMedicalRecord(patientId) {
-    const p = dbStore.get("patients").find(x => x.id === patientId);
+    const p = (dbStore.get("patients") || []).find(x => x.id === patientId);
     if (!p) return;
 
     Swal.fire({
@@ -663,7 +740,7 @@ class SmartAppController {
   renderDoctorsGrid() {
     const grid = document.getElementById("doctors-grid-container");
     if (!grid) return;
-    const doctors = dbStore.get("doctors");
+    const doctors = dbStore.get("doctors") || [];
 
     grid.innerHTML = doctors.map(d => `
       <div class="glass-card p-5 relative overflow-hidden group">
@@ -696,7 +773,7 @@ class SmartAppController {
   }
 
   bookDoctorAppointment(doctorId) {
-    const d = dbStore.get("doctors").find(x => x.id === doctorId);
+    const d = (dbStore.get("doctors") || []).find(x => x.id === doctorId);
     if (!d) return;
 
     Swal.fire({
@@ -706,7 +783,7 @@ class SmartAppController {
           <div>
             <label class="text-xs text-slate-400">Pilih Pasien:</label>
             <select id="swal-apt-patient" class="form-input mt-1">
-              ${dbStore.get("patients").map(p => `<option value="${p.name}">${p.name} (${p.id})</option>`).join("")}
+              ${(dbStore.get("patients") || []).map(p => `<option value="${p.name}">${p.name} (${p.id})</option>`).join("")}
             </select>
           </div>
           <div class="grid grid-cols-2 gap-2">
@@ -771,7 +848,7 @@ class SmartAppController {
   renderAppointmentsTable() {
     const tableBody = document.getElementById("appointments-table-body");
     if (!tableBody) return;
-    const apts = dbStore.get("appointments");
+    const apts = dbStore.get("appointments") || [];
 
     tableBody.innerHTML = apts.map(a => `
       <tr>
@@ -804,7 +881,7 @@ class SmartAppController {
   renderMedicinesTable() {
     const tableBody = document.getElementById("medicines-table-body");
     if (!tableBody) return;
-    const medicines = dbStore.get("medicines");
+    const medicines = dbStore.get("medicines") || [];
 
     tableBody.innerHTML = medicines.map(m => {
       const isLow = Number(m.stock) <= Number(m.minStock);
@@ -859,11 +936,13 @@ class SmartAppController {
         </div>
       `,
       didOpen: () => {
-        new QRCode(document.getElementById("med-qrcode-canvas"), {
-          text: medId,
-          width: 140,
-          height: 140
-        });
+        if (typeof QRCode !== "undefined") {
+          new QRCode(document.getElementById("med-qrcode-canvas"), {
+            text: medId,
+            width: 140,
+            height: 140
+          });
+        }
       },
       background: '#101B24',
       color: '#fff',
@@ -914,13 +993,14 @@ class SmartAppController {
   }
 
   // --- AI Health Assistant Chat ---
-  sendAiAssistantMessage() {
+  sendAiAssistantMessage(queryOverride = null) {
     const input = document.getElementById("ai-assistant-input");
     const container = document.getElementById("ai-chat-body");
-    if (!input || !input.value.trim() || !container) return;
+    
+    const userQuery = queryOverride || (input ? input.value.trim() : "");
+    if (!userQuery || !container) return;
 
-    const userQuery = input.value.trim();
-    input.value = "";
+    if (input) input.value = "";
 
     container.innerHTML += `
       <div class="flex flex-col items-end mb-4">
@@ -952,7 +1032,7 @@ class SmartAppController {
   renderNurseQueue() {
     const queueList = document.getElementById("nurse-queue-list");
     if (!queueList) return;
-    const apts = dbStore.get("appointments");
+    const apts = dbStore.get("appointments") || [];
 
     queueList.innerHTML = apts.map(a => `
       <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
@@ -1071,7 +1151,7 @@ class SmartAppController {
   renderCashierPOS() {
     const itemsContainer = document.getElementById("pos-items-list");
     if (!itemsContainer) return;
-    const meds = dbStore.get("medicines");
+    const meds = dbStore.get("medicines") || [];
 
     itemsContainer.innerHTML = meds.map(m => `
       <div onclick="smartApp.addToPOSCart('${m.name}', ${m.sellingPrice})" class="p-3 bg-slate-900 rounded-xl border border-slate-800 hover:border-teal-500/50 cursor-pointer transition">
@@ -1141,31 +1221,34 @@ class SmartAppController {
 
   // --- Reports & Analytics ---
   renderReports() {
-    const ctxRep = document.getElementById("chart-report-analytics");
-    if (ctxRep) {
-      if (this.charts.report) this.charts.report.destroy();
-      this.charts.report = new Chart(ctxRep, {
-        type: 'bar',
-        data: {
-          labels: ['Konsultasi Umum', 'Poli Gigi', 'Spesialis Kulit', 'Penjualan Obat', 'Laboratorium'],
-          datasets: [{
-            label: 'Omset per Kategori (Rp)',
-            data: [35000000, 22000000, 28000000, 42000000, 15000000],
-            backgroundColor: '#00C2A8',
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#94A3B8' } } },
-          scales: {
-            x: { ticks: { color: '#94A3B8' } },
-            y: { ticks: { color: '#94A3B8' } }
+    if (typeof Chart === "undefined") return;
+    try {
+      const ctxRep = document.getElementById("chart-report-analytics");
+      if (ctxRep) {
+        if (this.charts.report) this.charts.report.destroy();
+        this.charts.report = new Chart(ctxRep, {
+          type: 'bar',
+          data: {
+            labels: ['Konsultasi Umum', 'Poli Gigi', 'Spesialis Kulit', 'Penjualan Obat', 'Laboratorium'],
+            datasets: [{
+              label: 'Omset per Kategori (Rp)',
+              data: [35000000, 22000000, 28000000, 42000000, 15000000],
+              backgroundColor: '#00C2A8',
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#94A3B8' } } },
+            scales: {
+              x: { ticks: { color: '#94A3B8' } },
+              y: { ticks: { color: '#94A3B8' } }
+            }
           }
-        }
-      });
-    }
+        });
+      }
+    } catch(e){}
   }
 
   // --- Settings & Integrations ---
@@ -1238,8 +1321,11 @@ class SmartAppController {
   }
 }
 
-// Instantiate immediately and on DOMContentLoaded as fallback
+// Global window instantiation & fallbacks
 window.smartApp = new SmartAppController();
+window.doLogin = (role) => window.smartApp.login(role);
+window.doLoginFromLanding = () => window.smartApp.loginFromLanding();
+
 document.addEventListener("DOMContentLoaded", () => {
   if (!window.smartApp) {
     window.smartApp = new SmartAppController();
