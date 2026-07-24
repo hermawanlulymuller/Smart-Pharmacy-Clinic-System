@@ -389,7 +389,19 @@ class SmartAppController {
       }
 
       this.updateUserUI();
-      this.loadModule(this.activeModule || "dashboard");
+      
+      // Direct user to appropriate default module based on role
+      if (role === "cashier") {
+        this.loadModule("cashier");
+      } else if (role === "pharmacist") {
+        this.loadModule("medicine");
+      } else if (role === "doctor") {
+        this.loadModule("doctors");
+      } else if (role === "nurse") {
+        this.loadModule("nurse");
+      } else {
+        this.loadModule("dashboard");
+      }
 
       // Non-blocking async background sync
       setTimeout(() => {
@@ -447,7 +459,7 @@ class SmartAppController {
     }
   }
 
-  // --- Router & Module Loader with RBAC Guard ---
+  // --- Router & Module Loader ---
   loadModule(moduleName) {
     this.activeModule = moduleName;
     
@@ -574,7 +586,7 @@ class SmartAppController {
           data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul'],
             datasets: [{
-              label: 'Pendapatan (Juta Rp)',
+              label: 'Pendapatan Toko & Klinik (Juta Rp)',
               data: [45, 52, 60, 58, 75, 82, 98],
               borderColor: '#00C2A8',
               backgroundColor: 'rgba(0, 194, 168, 0.15)',
@@ -777,7 +789,7 @@ class SmartAppController {
     });
   }
 
-  // --- Doctors Module ---
+  // --- Doctors Module (Default Biaya Rp 100.000) ---
   renderDoctorsGrid() {
     const grid = document.getElementById("doctors-grid-container");
     if (!grid) return;
@@ -801,7 +813,7 @@ class SmartAppController {
             <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-800">
               <div class="text-xs">
                 <span class="text-slate-400">Tarif Konsultasi:</span>
-                <span class="font-bold text-teal-300 block">Rp ${Number(d.consultationFee).toLocaleString('id-ID')}</span>
+                <span class="font-bold text-emerald-400 block font-mono">Rp 100.000</span>
               </div>
               <button onclick="smartApp.bookDoctorAppointment('${d.id}')" class="px-3 py-1.5 glow-teal-btn rounded-lg text-xs font-semibold">
                 <i class="fas fa-calendar-plus mr-1"></i> Buat Janji
@@ -843,10 +855,10 @@ class SmartAppController {
             </div>
           </div>
           <div>
-            <label class="text-xs text-slate-400">Tipe Konsultasi:</label>
+            <label class="text-xs text-slate-400">Tipe Konsultasi & Tarif (Rp 100.000):</label>
             <select id="swal-apt-type" class="form-input mt-1">
-              <option value="Tatap Muka">Kunjungan Tatap Muka di Klinik</option>
-              <option value="Online Telemedisin">Telemedisin / Virtual Call</option>
+              <option value="Tatap Muka di Klinik">Kunjungan Tatap Muka di Klinik (Rp 100.000)</option>
+              <option value="Online Telemedisin">Telemedisin Virtual Call (Rp 100.000)</option>
             </select>
           </div>
           <textarea id="swal-apt-notes" class="form-input" placeholder="Keluhan Utama / Catatan Tambahan"></textarea>
@@ -918,7 +930,7 @@ class SmartAppController {
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   }
 
-  // --- Medicine / Inventory Module ---
+  // --- Medicine / Inventory Module (Harga Beli Pokok vs Harga Jual +25% Margin) ---
   renderMedicinesTable() {
     const tableBody = document.getElementById("medicines-table-body");
     if (!tableBody) return;
@@ -927,6 +939,9 @@ class SmartAppController {
     tableBody.innerHTML = medicines.map(m => {
       const isLow = Number(m.stock) <= Number(m.minStock);
       const isNearExp = new Date(m.expiredDate) < new Date("2026-10-01");
+      const buyPrice = Number(m.purchasePrice || 10000);
+      const sellPrice = Number(m.sellingPrice || Math.round(buyPrice * 1.25));
+
       return `
         <tr>
           <td>
@@ -945,8 +960,15 @@ class SmartAppController {
             </span>
           </td>
           <td>
-            <div class="font-bold text-teal-300">Rp ${Number(m.sellingPrice).toLocaleString('id-ID')}</div>
-            <div class="text-xs text-slate-500">Beli: Rp ${Number(m.purchasePrice).toLocaleString('id-ID')}</div>
+            <div class="font-mono text-xs text-slate-400">Rp ${buyPrice.toLocaleString('id-ID')}</div>
+            <div class="text-[10px] text-slate-500">Harga Pokok</div>
+          </td>
+          <td>
+            <div class="font-bold text-emerald-400 font-mono text-xs">Rp ${sellPrice.toLocaleString('id-ID')}</div>
+            <div class="text-[10px] text-emerald-300/80">Retail Toko</div>
+          </td>
+          <td>
+            <span class="badge-status badge-success text-[10px]"><i class="fas fa-arrow-up mr-1"></i> +25% Margin</span>
           </td>
           <td>
             <div class="flex items-center gap-2">
@@ -967,10 +989,10 @@ class SmartAppController {
     }).join("");
   }
 
-  // --- Pharmacist Form: Add New Medicine Batch ---
+  // --- Pharmacist Form: Add New Medicine Batch (Auto 25% Profit Calculation) ---
   addNewMedicineModal() {
     Swal.fire({
-      title: 'Input Obat Baru (Stok Apotek)',
+      title: 'Input Stok Obat Baru (+25% Profit Margin)',
       width: '650px',
       html: `
         <div class="space-y-3 text-left">
@@ -1007,17 +1029,20 @@ class SmartAppController {
           </div>
           <div class="grid grid-cols-3 gap-2">
             <div>
-              <label class="text-xs text-slate-400">Harga Beli (Rp):</label>
-              <input id="swal-med-purchase" type="number" class="form-input mt-1" placeholder="10000">
+              <label class="text-xs text-slate-400">Harga Beli Pokok (Rp):</label>
+              <input id="swal-med-purchase" type="number" class="form-input mt-1" placeholder="10000" oninput="smartApp.updateAutoMarginPreview(this.value)">
             </div>
             <div>
-              <label class="text-xs text-slate-400">Harga Jual (Rp):</label>
-              <input id="swal-med-selling" type="number" class="form-input mt-1" placeholder="15000">
+              <label class="text-xs text-teal-400 font-bold">Harga Jual (+25% Profit):</label>
+              <input id="swal-med-selling" type="number" class="form-input mt-1 font-bold text-emerald-300" placeholder="12500" readonly>
             </div>
             <div>
               <label class="text-xs text-slate-400">Stok Awal (Unit):</label>
               <input id="swal-med-stock" type="number" class="form-input mt-1" placeholder="100">
             </div>
+          </div>
+          <div class="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-[11px] text-emerald-300">
+            <i class="fas fa-calculator mr-1"></i> Rumus: Harga Jual otomatis ditambah margin keuntungan 25% dari Harga Beli Pokok.
           </div>
           <div>
             <label class="text-xs text-slate-400">Lokasi Rak Simpan:</label>
@@ -1032,11 +1057,12 @@ class SmartAppController {
       confirmButtonColor: '#00C2A8',
       preConfirm: () => {
         const name = document.getElementById('swal-med-name').value;
-        const sellingPrice = document.getElementById('swal-med-selling').value;
-        if (!name || !sellingPrice) {
-          Swal.showValidationMessage('Nama Obat dan Harga Jual wajib diisi!');
+        const buyPrice = Number(document.getElementById('swal-med-purchase').value || 0);
+        if (!name || buyPrice <= 0) {
+          Swal.showValidationMessage('Nama Obat dan Harga Beli Pokok wajib diisi!');
           return false;
         }
+        const sellPrice = Math.round(buyPrice * 1.25);
         return {
           id: `MED-${Math.floor(1000 + Math.random() * 9000)}`,
           name: name,
@@ -1044,8 +1070,9 @@ class SmartAppController {
           brand: document.getElementById('swal-med-brand').value || "Generik",
           batchNumber: document.getElementById('swal-med-batch').value || `BCH-${Date.now().toString().slice(-6)}`,
           expiredDate: document.getElementById('swal-med-exp').value || "2028-12-31",
-          purchasePrice: Number(document.getElementById('swal-med-purchase').value || 10000),
-          sellingPrice: Number(sellingPrice),
+          purchasePrice: buyPrice,
+          sellingPrice: sellPrice,
+          profitMargin: "25%",
           stock: Number(document.getElementById('swal-med-stock').value || 50),
           minStock: 10,
           location: document.getElementById('swal-med-location').value || "Rak Umum A1",
@@ -1060,12 +1087,20 @@ class SmartAppController {
         Swal.fire({
           icon: 'success',
           title: 'Obat Baru Berhasil Ditambahkan!',
-          text: 'Data langsung disinkronkan ke Google Sheets Database.',
+          text: `Harga Jual diset Rp ${result.value.sellingPrice.toLocaleString('id-ID')} (+25% Keuntungan). Data disinkronkan ke Google Sheets.`,
           background: '#101B24',
           color: '#fff'
         });
       }
     });
+  }
+
+  updateAutoMarginPreview(buyVal) {
+    const sellInput = document.getElementById("swal-med-selling");
+    const buy = Number(buyVal || 0);
+    if (sellInput) {
+      sellInput.value = buy > 0 ? Math.round(buy * 1.25) : "";
+    }
   }
 
   generateMedicineQR(medId, medName) {
@@ -1245,11 +1280,11 @@ class SmartAppController {
         <div class="space-y-2">
           <div class="flex justify-between text-xs text-slate-300">
             <span>1. Paracetamol 500mg Forte (2 Strip)</span>
-            <span class="text-emerald-400 font-bold">Aturan: 3x1 Sesudah Makan</span>
+            <span class="text-emerald-400 font-bold font-mono">Harga Jual: Rp 12.500 (+25%)</span>
           </div>
           <div class="flex justify-between text-xs text-slate-300">
             <span>2. Amlodipine Besylate 10mg (1 Strip)</span>
-            <span class="text-emerald-400 font-bold">Aturan: 1x1 Pagi Hari</span>
+            <span class="text-emerald-400 font-bold font-mono">Harga Jual: Rp 15.000 (+25%)</span>
           </div>
         </div>
         <div class="flex justify-end gap-2 pt-2">
@@ -1309,21 +1344,27 @@ class SmartAppController {
     if (!itemsContainer) return;
     const meds = dbStore.get("medicines") || [];
 
-    itemsContainer.innerHTML = meds.map(m => `
-      <div onclick="smartApp.addToPOSCart('${m.name}', ${m.sellingPrice}, 'Obat Apotek')" class="p-3 bg-slate-900 rounded-xl border border-slate-800 hover:border-teal-500/50 cursor-pointer transition">
-        <h4 class="font-bold text-white text-xs truncate">${m.name}</h4>
-        <p class="text-xs text-slate-400 mt-0.5">${m.category}</p>
-        <div class="flex justify-between items-center mt-2">
-          <span class="text-xs font-bold text-teal-300 font-mono">Rp ${Number(m.sellingPrice).toLocaleString('id-ID')}</span>
-          <span class="text-[10px] text-emerald-400">Stok: ${m.stock}</span>
+    itemsContainer.innerHTML = meds.map(m => {
+      const sellPrice = Number(m.sellingPrice || Math.round((m.purchasePrice || 10000) * 1.25));
+      return `
+        <div onclick="smartApp.addToPOSCart('${m.name}', ${sellPrice}, 'Obat Apotek')" class="p-3 bg-slate-900 rounded-xl border border-slate-800 hover:border-teal-500/50 cursor-pointer transition">
+          <div class="flex justify-between items-start">
+            <h4 class="font-bold text-white text-xs truncate flex-1">${m.name}</h4>
+            <span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold">+25%</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">${m.category}</p>
+          <div class="flex justify-between items-center mt-2">
+            <span class="text-xs font-bold text-teal-300 font-mono">Rp ${sellPrice.toLocaleString('id-ID')}</span>
+            <span class="text-[10px] text-emerald-400">Stok: ${m.stock}</span>
+          </div>
         </div>
-      </div>
-    `).join("");
+      `;
+    }).join("");
 
     this.updatePOSTotal();
   }
 
-  addClinicalFee(feeName, feeAmount) {
+  addClinicalFee(feeName, feeAmount = 100000) {
     this.addToPOSCart(feeName, feeAmount, 'Layanan Klinik');
   }
 
@@ -1351,7 +1392,7 @@ class SmartAppController {
       if (this.posCart.length === 0) {
         cartContainer.innerHTML = `
           <div class="text-center p-6 border border-dashed border-slate-800 rounded-xl text-slate-500 text-xs">
-            <i class="fas fa-shopping-cart text-2xl mb-2 block"></i> Keranjang Kasir Kosong.<br>Pilih obat atau layanan klinik.
+            <i class="fas fa-shopping-cart text-2xl mb-2 block"></i> Keranjang Toko Kosong.<br>Pilih obat apotek atau biaya periksa dokter.
           </div>
         `;
       } else {
@@ -1389,7 +1430,7 @@ class SmartAppController {
       Swal.fire({
         icon: 'warning',
         title: 'Keranjang Kosong',
-        text: 'Silakan pilih obat atau biaya layanan klinik terlebih dahulu!',
+        text: 'Silakan pilih obat atau biaya pemeriksaan dokter (Rp 100.000) terlebih dahulu!',
         background: '#101B24',
         color: '#fff'
       });
@@ -1397,7 +1438,7 @@ class SmartAppController {
     }
 
     Swal.fire({
-      title: 'Pilih Metode Pembayaran Kasir',
+      title: 'Pilih Metode Pembayaran Kasir Toko',
       width: '600px',
       html: `
         <div class="space-y-4 text-left">
@@ -1407,7 +1448,7 @@ class SmartAppController {
           </div>
 
           <div>
-            <label class="text-xs text-slate-400 block mb-1">Metode Pembayaran:</label>
+            <label class="text-xs text-slate-400 block mb-1">Metode Pembayaran Kasir:</label>
             <select id="swal-payment-method" class="form-input text-xs" onchange="smartApp.togglePaymentFields(this.value, ${totalAmount})">
               <option value="QRIS">📲 QRIS Dynamic (Semua Bank & E-Wallet)</option>
               <option value="Debit">💳 Kartu Debit / Kredit (Mesin EDC)</option>
@@ -1535,7 +1576,7 @@ class SmartAppController {
 
   printThermalReceipt(txData) {
     Swal.fire({
-      title: 'Pratinjau Struk Kasir / Invoice Digital',
+      title: 'Pratinjau Struk Kasir Toko Obat / Invoice',
       width: '500px',
       html: `
         <div class="p-4 bg-white text-black rounded-lg text-left text-xs font-mono border-2 border-slate-300 space-y-2">
@@ -1597,7 +1638,7 @@ class SmartAppController {
         this.charts.report = new Chart(ctxRep, {
           type: 'bar',
           data: {
-            labels: ['Konsultasi Umum', 'Poli Gigi', 'Spesialis Kulit', 'Penjualan Obat', 'Laboratorium'],
+            labels: ['Konsultasi Umum', 'Poli Gigi', 'Spesialis Kulit', 'Penjualan Obat (+25%)', 'Laboratorium'],
             datasets: [{
               label: 'Omset per Kategori (Rp)',
               data: [35000000, 22000000, 28000000, 42000000, 15000000],
