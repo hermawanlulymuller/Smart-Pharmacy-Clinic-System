@@ -11,6 +11,7 @@ class SmartAppController {
     this.selectedRole = "admin";
     this.activeModule = "dashboard";
     this.charts = {};
+    this.posCart = [];
 
     this.initTheme();
     this.initLanguage();
@@ -174,6 +175,46 @@ class SmartAppController {
     }
   }
 
+  async pullAllFromGoogleSheets() {
+    if (typeof Swal !== "undefined") {
+      Swal.fire({
+        title: 'Menarik Data Google Sheets...',
+        text: 'Mengambil data pasien, obat, janji temu & transaksi dari Google Sheets API...',
+        background: '#101B24',
+        color: '#fff',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+      });
+    }
+
+    try {
+      const count = await gasSyncService.pullAllDataFromGoogleSheets();
+      this.loadModule(this.activeModule);
+      this.initGasSyncStatus();
+
+      if (typeof Swal !== "undefined") {
+        Swal.fire({
+          icon: 'success',
+          title: 'Data Berhasil Disinkronkan!',
+          text: `${count} modul data telah ditarik dan disinkronkan dari Google Sheets.`,
+          background: '#101B24',
+          color: '#fff',
+          confirmButtonColor: '#00C2A8'
+        });
+      }
+    } catch (err) {
+      if (typeof Swal !== "undefined") {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Gagal Menarik Data',
+          text: err.message || 'Menggunakan data LocalStorage offline.',
+          background: '#101B24',
+          color: '#fff'
+        });
+      }
+    }
+  }
+
   async triggerManualSync() {
     const icon = document.getElementById("gas-sync-icon");
     if (icon) icon.className = "fas fa-spinner fa-spin text-teal-400 text-xs ml-1";
@@ -283,7 +324,7 @@ class SmartAppController {
     }
   }
 
-  // --- Auth & Role Guard (FOOLPROOF DOM SWITCHING) ---
+  // --- Auth & Role Guard ---
   checkAuth() {
     const landingView = document.getElementById("landing-login-view");
     const appShellView = document.getElementById("app-shell-view");
@@ -406,7 +447,7 @@ class SmartAppController {
     }
   }
 
-  // --- Router & Module Loader ---
+  // --- Router & Module Loader with RBAC Guard ---
   loadModule(moduleName) {
     this.activeModule = moduleName;
     
@@ -926,6 +967,107 @@ class SmartAppController {
     }).join("");
   }
 
+  // --- Pharmacist Form: Add New Medicine Batch ---
+  addNewMedicineModal() {
+    Swal.fire({
+      title: 'Input Obat Baru (Stok Apotek)',
+      width: '650px',
+      html: `
+        <div class="space-y-3 text-left">
+          <div>
+            <label class="text-xs text-slate-400">Nama Obat & Sediaan:</label>
+            <input id="swal-med-name" class="form-input mt-1" placeholder="Misal: Paracetamol 500mg Forte">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs text-slate-400">Kategori Obat:</label>
+              <select id="swal-med-cat" class="form-input mt-1">
+                <option value="Obat Bebas">Obat Bebas (Hijau)</option>
+                <option value="Obat Bebas Terbatas">Obat Bebas Terbatas (Biru)</option>
+                <option value="Obat Keras / Resep">Obat Keras / Resep (Merah K)</option>
+                <option value="Antibiotik">Antibiotik</option>
+                <option value="Vitamin & Suplemen">Vitamin & Suplemen</option>
+                <option value="Alat Kesehatan">Alat Kesehatan & BMHP</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Brand / Pabrikan:</label>
+              <input id="swal-med-brand" class="form-input mt-1" placeholder="Misal: Kimia Farma / Sanbe">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs text-slate-400">No. Batch Produksi:</label>
+              <input id="swal-med-batch" class="form-input mt-1" placeholder="BCH-2026-901">
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Tanggal Kadaluarsa (Expired):</label>
+              <input id="swal-med-exp" type="date" class="form-input mt-1" value="2028-12-31">
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="text-xs text-slate-400">Harga Beli (Rp):</label>
+              <input id="swal-med-purchase" type="number" class="form-input mt-1" placeholder="10000">
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Harga Jual (Rp):</label>
+              <input id="swal-med-selling" type="number" class="form-input mt-1" placeholder="15000">
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Stok Awal (Unit):</label>
+              <input id="swal-med-stock" type="number" class="form-input mt-1" placeholder="100">
+            </div>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400">Lokasi Rak Simpan:</label>
+            <input id="swal-med-location" class="form-input mt-1" placeholder="Rak A-02 / Lemari Pendingin 4°C">
+          </div>
+        </div>
+      `,
+      background: '#101B24',
+      color: '#fff',
+      showCancelButton: true,
+      confirmButtonText: 'Simpan & Sync Google Sheet',
+      confirmButtonColor: '#00C2A8',
+      preConfirm: () => {
+        const name = document.getElementById('swal-med-name').value;
+        const sellingPrice = document.getElementById('swal-med-selling').value;
+        if (!name || !sellingPrice) {
+          Swal.showValidationMessage('Nama Obat dan Harga Jual wajib diisi!');
+          return false;
+        }
+        return {
+          id: `MED-${Math.floor(1000 + Math.random() * 9000)}`,
+          name: name,
+          category: document.getElementById('swal-med-cat').value,
+          brand: document.getElementById('swal-med-brand').value || "Generik",
+          batchNumber: document.getElementById('swal-med-batch').value || `BCH-${Date.now().toString().slice(-6)}`,
+          expiredDate: document.getElementById('swal-med-exp').value || "2028-12-31",
+          purchasePrice: Number(document.getElementById('swal-med-purchase').value || 10000),
+          sellingPrice: Number(sellingPrice),
+          stock: Number(document.getElementById('swal-med-stock').value || 50),
+          minStock: 10,
+          location: document.getElementById('swal-med-location').value || "Rak Umum A1",
+          image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300"
+        };
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        dbStore.add("medicines", result.value);
+        this.renderMedicinesTable();
+        this.renderPharmacistDispensing();
+        Swal.fire({
+          icon: 'success',
+          title: 'Obat Baru Berhasil Ditambahkan!',
+          text: 'Data langsung disinkronkan ke Google Sheets Database.',
+          background: '#101B24',
+          color: '#fff'
+        });
+      }
+    });
+  }
+
   generateMedicineQR(medId, medName) {
     Swal.fire({
       title: `QR & Barcode: ${medName}`,
@@ -1147,75 +1289,301 @@ class SmartAppController {
     Swal.fire({ icon: 'success', title: 'Dispensing Berhasil!', background: '#101B24', color: '#fff' });
   }
 
-  // --- Cashier POS ---
+  // --- Cashier POS Billing & Multi-Payment System ---
   renderCashierPOS() {
+    const rbacDenied = document.getElementById("cashier-rbac-denied");
+    const posContainer = document.getElementById("cashier-pos-container");
+
+    // RBAC Guard Check: Only Cashier and Admin are allowed!
+    const role = this.currentUser ? this.currentUser.role : "";
+    if (role !== "cashier" && role !== "admin") {
+      if (rbacDenied) rbacDenied.classList.remove("hidden");
+      if (posContainer) posContainer.classList.add("hidden");
+      return;
+    } else {
+      if (rbacDenied) rbacDenied.classList.add("hidden");
+      if (posContainer) posContainer.classList.remove("hidden");
+    }
+
     const itemsContainer = document.getElementById("pos-items-list");
     if (!itemsContainer) return;
     const meds = dbStore.get("medicines") || [];
 
     itemsContainer.innerHTML = meds.map(m => `
-      <div onclick="smartApp.addToPOSCart('${m.name}', ${m.sellingPrice})" class="p-3 bg-slate-900 rounded-xl border border-slate-800 hover:border-teal-500/50 cursor-pointer transition">
+      <div onclick="smartApp.addToPOSCart('${m.name}', ${m.sellingPrice}, 'Obat Apotek')" class="p-3 bg-slate-900 rounded-xl border border-slate-800 hover:border-teal-500/50 cursor-pointer transition">
         <h4 class="font-bold text-white text-xs truncate">${m.name}</h4>
         <p class="text-xs text-slate-400 mt-0.5">${m.category}</p>
         <div class="flex justify-between items-center mt-2">
-          <span class="text-xs font-bold text-teal-300">Rp ${Number(m.sellingPrice).toLocaleString('id-ID')}</span>
+          <span class="text-xs font-bold text-teal-300 font-mono">Rp ${Number(m.sellingPrice).toLocaleString('id-ID')}</span>
           <span class="text-[10px] text-emerald-400">Stok: ${m.stock}</span>
         </div>
       </div>
     `).join("");
+
+    this.updatePOSTotal();
   }
 
-  addToPOSCart(name, price) {
-    const cartList = document.getElementById("pos-cart-items");
-    if (!cartList) return;
+  addClinicalFee(feeName, feeAmount) {
+    this.addToPOSCart(feeName, feeAmount, 'Layanan Klinik');
+  }
 
-    cartList.innerHTML += `
-      <div class="flex justify-between items-center p-2 bg-slate-900/60 rounded border border-slate-800 text-xs">
-        <span class="text-white font-medium">${name}</span>
-        <span class="text-teal-300 font-bold">Rp ${Number(price).toLocaleString('id-ID')}</span>
-      </div>
-    `;
+  addToPOSCart(name, price, category = 'Obat') {
+    const existing = this.posCart.find(item => item.name === name);
+    if (existing) {
+      existing.qty += 1;
+    } else {
+      this.posCart.push({ name, price, qty: 1, category });
+    }
+    this.updatePOSTotal();
+  }
+
+  clearPOSCart() {
+    this.posCart = [];
     this.updatePOSTotal();
   }
 
   updatePOSTotal() {
+    const cartContainer = document.getElementById("pos-cart-items");
+    const subtotalEl = document.getElementById("pos-subtotal");
     const totalEl = document.getElementById("pos-grand-total");
-    if (totalEl) totalEl.textContent = "Rp 305.000";
+
+    if (cartContainer) {
+      if (this.posCart.length === 0) {
+        cartContainer.innerHTML = `
+          <div class="text-center p-6 border border-dashed border-slate-800 rounded-xl text-slate-500 text-xs">
+            <i class="fas fa-shopping-cart text-2xl mb-2 block"></i> Keranjang Kasir Kosong.<br>Pilih obat atau layanan klinik.
+          </div>
+        `;
+      } else {
+        cartContainer.innerHTML = this.posCart.map((item, index) => `
+          <div class="flex justify-between items-center p-2.5 bg-slate-900/80 rounded-lg border border-slate-800 text-xs">
+            <div class="flex-1 min-w-0 pr-2">
+              <div class="text-white font-semibold truncate">${item.name}</div>
+              <div class="text-[10px] text-teal-400 font-mono">Rp ${Number(item.price).toLocaleString('id-ID')} x ${item.qty}</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-teal-300 font-mono">Rp ${Number(item.price * item.qty).toLocaleString('id-ID')}</span>
+              <button onclick="smartApp.removePOSItem(${index})" class="text-rose-400 hover:text-rose-300 text-xs px-1">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+
+    const totalAmount = this.posCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    if (subtotalEl) subtotalEl.textContent = `Rp ${totalAmount.toLocaleString('id-ID')}`;
+    if (totalEl) totalEl.textContent = `Rp ${totalAmount.toLocaleString('id-ID')}`;
   }
 
+  removePOSItem(index) {
+    this.posCart.splice(index, 1);
+    this.updatePOSTotal();
+  }
+
+  // Multi-Payment Modal (Debit, QRIS, DANA, OVO, ShopeePay, Cash)
   processPOSPayment() {
+    const totalAmount = this.posCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    if (totalAmount <= 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Keranjang Kosong',
+        text: 'Silakan pilih obat atau biaya layanan klinik terlebih dahulu!',
+        background: '#101B24',
+        color: '#fff'
+      });
+      return;
+    }
+
     Swal.fire({
-      title: 'Pembayaran Kasir / POS',
+      title: 'Pilih Metode Pembayaran Kasir',
+      width: '600px',
       html: `
-        <div class="space-y-3 text-left">
-          <div class="text-sm font-bold text-teal-400 text-center">Total Tagihan: Rp 305.000</div>
-          <select id="swal-payment-method" class="form-input">
-            <option value="QRIS">QRIS Instant Dynamic</option>
-            <option value="Tunai">Tunai / Cash</option>
-            <option value="Transfer Bank">Transfer Bank / Virtual Account</option>
-            <option value="E-Wallet">E-Wallet (GoPay / OVO / ShopeePay)</option>
-          </select>
+        <div class="space-y-4 text-left">
+          <div class="p-3 bg-slate-900 rounded-xl border border-teal-500/30 text-center">
+            <span class="text-xs text-slate-400">Total Yang Harus Dibayar:</span>
+            <div class="text-2xl font-extrabold text-emerald-400 font-mono mt-0.5">Rp ${totalAmount.toLocaleString('id-ID')}</div>
+          </div>
+
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Metode Pembayaran:</label>
+            <select id="swal-payment-method" class="form-input text-xs" onchange="smartApp.togglePaymentFields(this.value, ${totalAmount})">
+              <option value="QRIS">📲 QRIS Dynamic (Semua Bank & E-Wallet)</option>
+              <option value="Debit">💳 Kartu Debit / Kredit (Mesin EDC)</option>
+              <option value="DANA">💙 E-Wallet DANA</option>
+              <option value="OVO">💜 E-Wallet OVO</option>
+              <option value="ShopeePay">🧡 ShopeePay / GoPay</option>
+              <option value="Tunai">💵 Tunai / Cash</option>
+            </select>
+          </div>
+
+          <!-- Payment Specific Fields -->
+          <div id="payment-dynamic-area" class="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2 text-xs">
+            <div class="text-center">
+              <div id="qris-canvas-pos" class="bg-white p-2.5 rounded-lg inline-block my-1"></div>
+              <p class="text-[11px] text-teal-300 font-semibold mt-1">Scan QRIS dengan aplikasi BCA, Mandiri, DANA, OVO, ShopeePay & GoPay</p>
+            </div>
+          </div>
         </div>
       `,
       background: '#101B24',
       color: '#fff',
       showCancelButton: true,
-      confirmButtonText: 'Bayar & Sync Google Sheet',
-      confirmButtonColor: '#00C2A8'
-    }).then(res => {
-      if (res.isConfirmed) {
-        dbStore.add("transactions", {
+      confirmButtonText: 'Konfirmasi Lunas & Sync Google Sheet',
+      confirmButtonColor: '#00C2A8',
+      didOpen: () => {
+        this.togglePaymentFields('QRIS', totalAmount);
+      },
+      preConfirm: () => {
+        const method = document.getElementById('swal-payment-method').value;
+        let change = 0;
+        let cashReceived = totalAmount;
+
+        if (method === "Tunai") {
+          const cashVal = Number(document.getElementById('swal-cash-input')?.value || 0);
+          if (cashVal < totalAmount) {
+            Swal.showValidationMessage(`Uang tunai kurang! Nominal harus minimal Rp ${totalAmount.toLocaleString('id-ID')}`);
+            return false;
+          }
+          cashReceived = cashVal;
+          change = cashVal - totalAmount;
+        }
+
+        return {
           id: `TRX-${Date.now()}`,
           date: new Date().toLocaleString('id-ID'),
-          patientName: "Budi Santoso",
-          doctorFee: 250000,
-          medicineTotal: 55000,
-          totalPaid: 305000,
-          paymentMethod: document.getElementById("swal-payment-method").value,
+          patientName: "Budi Santoso (PAT-2026-001)",
+          items: this.posCart,
+          totalPaid: totalAmount,
+          cashReceived: cashReceived,
+          changeAmount: change,
+          paymentMethod: method,
+          cashierName: this.currentUser ? this.currentUser.name : "Staf Kasir",
           status: "Lunas"
-        });
-        Swal.fire({ icon: 'success', title: 'Transaksi Lunas!', text: 'Struk dicetak & data disinkronkan ke Google Sheet.', background: '#101B24', color: '#fff' });
+        };
       }
+    }).then(res => {
+      if (res.isConfirmed) {
+        dbStore.add("transactions", res.value);
+        this.printThermalReceipt(res.value);
+        this.clearPOSCart();
+        Swal.fire({ 
+          icon: 'success', 
+          title: 'Transaksi Lunas!', 
+          text: `Pembayaran via ${res.value.paymentMethod} berhasil dicatat & disinkronkan ke Google Sheets.`, 
+          background: '#101B24', 
+          color: '#fff' 
+        });
+      }
+    });
+  }
+
+  togglePaymentFields(method, totalAmount) {
+    const area = document.getElementById("payment-dynamic-area");
+    if (!area) return;
+
+    if (method === "QRIS" || method === "DANA" || method === "OVO" || method === "ShopeePay") {
+      area.innerHTML = `
+        <div class="text-center space-y-2">
+          <div id="qris-canvas-pos" class="bg-white p-3 rounded-lg inline-block"></div>
+          <div class="text-xs font-bold text-teal-400">${method} Instant QR Code</div>
+          <div class="text-[11px] text-slate-300">Scan QR di atas untuk membayar <strong class="text-emerald-400">Rp ${totalAmount.toLocaleString('id-ID')}</strong></div>
+        </div>
+      `;
+      setTimeout(() => {
+        const qrEl = document.getElementById("qris-canvas-pos");
+        if (qrEl && typeof QRCode !== "undefined") {
+          qrEl.innerHTML = "";
+          new QRCode(qrEl, {
+            text: `00020101021126580016ID.CO.SMARTCLINIC520459995303360540${totalAmount}5802ID5912SMART CLINIC6007JAKARTA6304ABCD`,
+            width: 140,
+            height: 140
+          });
+        }
+      }, 50);
+    } else if (method === "Debit") {
+      area.innerHTML = `
+        <div class="space-y-2">
+          <div class="font-bold text-teal-400 text-xs">Informasi Mesin EDC / Kartu Debit:</div>
+          <input id="swal-card-bank" class="form-input text-xs" placeholder="Nama Bank (misal: BCA / Mandiri / BRI)">
+          <input id="swal-card-num" class="form-input text-xs" placeholder="4 Digit Terakhir Kartu (misal: 8812)">
+        </div>
+      `;
+    } else if (method === "Tunai") {
+      area.innerHTML = `
+        <div class="space-y-2">
+          <label class="font-bold text-teal-400 text-xs block">Nominal Uang Tunai Diterima (Rp):</label>
+          <input id="swal-cash-input" type="number" class="form-input text-xs font-mono text-lg text-emerald-300" value="${totalAmount}" oninput="smartApp.calcCashChange(this.value, ${totalAmount})">
+          <div class="flex justify-between text-xs pt-1">
+            <span class="text-slate-400">Kembalian:</span>
+            <span id="swal-change-text" class="font-bold text-teal-300 font-mono">Rp 0</span>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  calcCashChange(val, total) {
+    const changeEl = document.getElementById("swal-change-text");
+    const diff = Number(val || 0) - total;
+    if (changeEl) {
+      changeEl.textContent = `Rp ${diff >= 0 ? diff.toLocaleString('id-ID') : 0}`;
+      changeEl.className = diff >= 0 ? "font-bold text-teal-300 font-mono" : "font-bold text-rose-400 font-mono";
+    }
+  }
+
+  printThermalReceipt(txData) {
+    Swal.fire({
+      title: 'Pratinjau Struk Kasir / Invoice Digital',
+      width: '500px',
+      html: `
+        <div class="p-4 bg-white text-black rounded-lg text-left text-xs font-mono border-2 border-slate-300 space-y-2">
+          <div class="text-center font-bold text-sm border-b border-black pb-1">KLINIK & APOTEK SMART CARE</div>
+          <div class="text-center text-[10px]">Jl. Sudirman No. 88, Jakarta • Telp: (021) 555-911</div>
+          <div class="border-b border-dashed border-black my-1"></div>
+          <div><strong>No. Struk:</strong> ${txData.id}</div>
+          <div><strong>Tanggal:</strong> ${txData.date}</div>
+          <div><strong>Pasien:</strong> ${txData.patientName}</div>
+          <div><strong>Kasir:</strong> ${txData.cashierName}</div>
+          <div><strong>Metode Bayar:</strong> ${txData.paymentMethod}</div>
+          <div class="border-b border-dashed border-black my-1"></div>
+          
+          <div class="space-y-1">
+            ${(txData.items || []).map(i => `
+              <div class="flex justify-between">
+                <span>${i.name} x${i.qty}</span>
+                <span>Rp ${(i.price * i.qty).toLocaleString('id-ID')}</span>
+              </div>
+            `).join("")}
+          </div>
+
+          <div class="border-t border-black pt-1 space-y-0.5">
+            <div class="flex justify-between font-bold text-sm">
+              <span>TOTAL LUNAS:</span>
+              <span>Rp ${txData.totalPaid.toLocaleString('id-ID')}</span>
+            </div>
+            ${txData.paymentMethod === "Tunai" ? `
+              <div class="flex justify-between text-[11px]">
+                <span>Tunai Diterima:</span>
+                <span>Rp ${txData.cashReceived.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="flex justify-between text-[11px]">
+                <span>Kembalian:</span>
+                <span>Rp ${txData.changeAmount.toLocaleString('id-ID')}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="text-center pt-2 text-[10px] border-t border-dashed border-black">
+            *** TERIMA KASIH - SEMOGA LEKAS SEMBUH ***
+          </div>
+        </div>
+      `,
+      background: '#101B24',
+      color: '#fff',
+      confirmButtonText: 'Cetak Struk Thermal',
+      confirmButtonColor: '#00C2A8'
     });
   }
 

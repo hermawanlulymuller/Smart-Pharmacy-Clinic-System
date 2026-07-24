@@ -115,6 +115,27 @@ class GoogleAppsScriptService {
     }
     return false;
   }
+
+  async pullAllDataFromGoogleSheets() {
+    const url = this.getUrl();
+    if (!url) throw new Error("URL Google Apps Script belum dikonfigurasi di Settings atau Landing Page.");
+
+    const resp = await fetch(`${url}?action=readAll`);
+    if (!resp.ok) throw new Error("Gagal terhubung ke Google Sheets API.");
+    const json = await resp.json();
+
+    if (json.status === "success" && json.data) {
+      let updatedCount = 0;
+      if (json.data.Patients && json.data.Patients.length > 0) { dbStore.set("patients", json.data.Patients); updatedCount++; }
+      if (json.data.Doctors && json.data.Doctors.length > 0) { dbStore.set("doctors", json.data.Doctors); updatedCount++; }
+      if (json.data.Medicines && json.data.Medicines.length > 0) { dbStore.set("medicines", json.data.Medicines); updatedCount++; }
+      if (json.data.Appointments && json.data.Appointments.length > 0) { dbStore.set("appointments", json.data.Appointments); updatedCount++; }
+      if (json.data.Transactions && json.data.Transactions.length > 0) { dbStore.set("transactions", json.data.Transactions); updatedCount++; }
+      return updatedCount;
+    } else {
+      throw new Error("Respon data Google Sheets kosong atau format tidak sesuai.");
+    }
+  }
 }
 
 window.gasSyncService = new GoogleAppsScriptService();
